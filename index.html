@@ -16,24 +16,23 @@
         .dark-card { background: rgba(26, 27, 30, 0.95); border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); }
         .home-btn { background: white; border-radius: 30px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.2s; }
         .home-btn:active { transform: scale(0.9); }
-        .nav-tab { background: white; border-radius: 15px; padding: 10px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .nav-tab { background: white; border-radius: 15px; padding: 10px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .chat-me { background: white; color: #1E0A40; border-radius: 18px 18px 4px 18px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
+        .chat-other { background: #25262B; color: white; border-radius: 4px 18px 18px 18px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="aurora-bg"></div>
     <div id="app">
-        <header class="p-6 shrink-0 z-50 flex flex-col gap-3">
-            <div class="flex items-center justify-between">
-                <div id="artist-toggle" onclick="toggleArtistMode()" class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm cursor-pointer flex items-center gap-2 transition-all">
-                    <div id="toggle-dot" class="w-3 h-3 bg-gray-300 rounded-full"></div>
-                    <span id="artist-status" class="text-[10px] font-black text-gray-500 uppercase tracking-tighter">Artist OFF</span>
-                </div>
-                <div onclick="goHome()" class="text-[#1E0A40] font-[900] tracking-tighter text-2xl italic cursor-pointer">LOYDING</div>
+        <header id="header-bar" class="p-6 shrink-0 z-50 flex items-center justify-between hidden">
+            <div id="artist-badge" class="bg-white/90 px-4 py-1.5 rounded-full shadow-sm flex items-center gap-2">
+                <span id="artist-dot" class="w-2 h-2 bg-gray-300 rounded-full"></span>
+                <span id="artist-text" class="text-[10px] font-black text-gray-500 uppercase tracking-tighter">User Mode</span>
             </div>
-            <div id="artist-name-display" class="hidden animate-bounce bg-purple-600 text-white text-[10px] font-black px-4 py-1 rounded-full w-fit mx-auto"></div>
+            <div onclick="goHome()" class="text-[#1E0A40] font-[900] tracking-tighter text-2xl italic cursor-pointer">LOYDING</div>
         </header>
 
-        <main id="main-view" class="flex-1 overflow-y-auto hide-scroll px-5 pb-10"></main>
+        <main id="main-view" class="flex-1 overflow-y-auto hide-scroll px-5"></main>
 
         <footer id="footer-nav" class="hidden p-4 shrink-0">
             <nav class="grid grid-cols-4 gap-2 bg-white/80 backdrop-blur-md p-3 rounded-[30px]">
@@ -48,152 +47,165 @@
     <script>
         const mainView = document.getElementById('main-view');
         const footer = document.getElementById('footer-nav');
+        const header = document.getElementById('header-bar');
 
-        // 상태 관리 (로컬스토리지 활용 가능)
         let state = {
+            currentUser: null,
+            isAdmin: false,
             userName: "ROSSY",
             userProfile: "https://i.pravatar.cc/150?u=rossy",
-            isArtist: false,
-            artistName: "",
             chats: [
-                { id: 1, name: "LOYD", last: "어때 어때" },
-                { id: 2, name: "서리닝", last: "포이드 믿는당ㅁ" }
+                { id: 1, name: "LOYD", last: "어때 어때", msgs: [{me:false, text:"어때 어때"}] },
+                { id: 2, name: "서리닝", last: "포이드 믿는당ㅁ", msgs: [{me:false, text:"포이드 믿는당ㅁ"}] }
             ],
-            posts: [
-                { id: 1, author: "LOYDING", content: "오늘 날씨 대박! 다들 뭐해요?", img: "https://picsum.photos/400/400" }
-            ]
+            posts: [{ id: 1, author: "LOYDING", content: "환영합니다!", img: "https://picsum.photos/400/400", comments: [] }]
         };
 
         const views = {
+            login: () => `
+                <div class="h-full flex flex-col items-center justify-center pt-20">
+                    <div class="dark-card p-10 w-full text-center space-y-6">
+                        <h1 class="text-4xl font-[900] text-white italic tracking-tighter">LOYDING LOGIN</h1>
+                        <input type="text" id="login-id" placeholder="ID" class="w-full bg-white/10 rounded-2xl p-4 text-white font-bold outline-none border border-white/5">
+                        <input type="password" id="login-pw" placeholder="PASSWORD" class="w-full bg-white/10 rounded-2xl p-4 text-white font-bold outline-none border border-white/5">
+                        <button onclick="handleLogin()" class="w-full bg-white text-[#1E0A40] py-4 rounded-2xl font-black text-xl">ENTER</button>
+                    </div>
+                </div>`,
+
             home: () => `
-                <div class="grid grid-cols-2 gap-4 py-4">
+                <div class="grid grid-cols-2 gap-4 py-4 animate-in fade-in duration-300">
+                    <button onclick="renderView('call')" class="home-btn"><i data-lucide="phone"></i><span class="text-[11px] font-black mt-2">CALL</span></button>
                     <button onclick="renderView('message')" class="home-btn"><i data-lucide="mail"></i><span class="text-[11px] font-black mt-2">MESSAGE</span></button>
                     <button onclick="renderView('feed')" class="home-btn"><i data-lucide="layout-grid"></i><span class="text-[11px] font-black mt-2">FEED</span></button>
                     <button onclick="renderView('rory')" class="home-btn"><i data-lucide="smile"></i><span class="text-[11px] font-black mt-2">RORY</span></button>
                     <button onclick="renderView('letter')" class="home-btn"><i data-lucide="pen-tool"></i><span class="text-[11px] font-black mt-2">LETTER</span></button>
                     <button onclick="renderView('calendar')" class="home-btn"><i data-lucide="calendar"></i><span class="text-[11px] font-black mt-2">CALENDAR</span></button>
                     <button onclick="renderView('settings')" class="home-btn"><i data-lucide="settings"></i><span class="text-[11px] font-black mt-2">SETTINGS</span></button>
+                    <button onclick="location.reload()" class="home-btn"><i data-lucide="refresh-cw"></i><span class="text-[11px] font-black mt-2">REFRESH</span></button>
                 </div>`,
 
             message: () => `
                 <div class="flex justify-between items-center mb-6 mt-4">
-                    <h2 class="text-[#1E0A40] text-3xl font-black italic">Message</h2>
-                    <button onclick="addChat()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="text-[#1E0A40]"></i></button>
+                    <h2 class="text-[#1E0A40] text-3xl font-[900] italic">Message</h2>
+                    ${state.isAdmin ? '<button onclick="addChatRoom()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus"></i></button>' : ''}
                 </div>
                 <div class="space-y-3">
                     ${state.chats.map(chat => `
-                        <div class="dark-card p-5 flex items-center gap-4 relative" onclick="enterChat('${chat.name}')">
-                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center font-black">${chat.name[0]}</div>
+                        <div class="dark-card p-5 flex items-center gap-4 relative" onclick="openChatRoom(${chat.id})">
+                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center font-black text-[#1E0A40]">${chat.name[0]}</div>
                             <div class="flex-1 text-white">
                                 <h3 class="font-black text-lg">${chat.name}</h3>
-                                <p class="text-gray-400 text-sm">${chat.last}</p>
+                                <p class="text-gray-400 text-sm truncate">${chat.last}</p>
                             </div>
-                            <button onclick="deleteChat(${chat.id}, event)" class="text-red-500 p-2"><i data-lucide="trash-2" class="w-4"></i></button>
-                        </div>
-                    `).join('')}
+                            ${state.isAdmin ? `<button onclick="deleteChatRoom(${chat.id}, event)" class="text-red-500 p-2"><i data-lucide="trash-2" class="w-4"></i></button>` : ''}
+                        </div>`).join('')}
                 </div>`,
 
-            feed: () => `
-                <div class="flex justify-between items-center mb-6 mt-4">
-                    <h2 class="text-[#1E0A40] text-3xl font-black italic">Feed</h2>
-                    <label class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer"><i data-lucide="camera" class="text-[#1E0A40]"></i><input type="file" class="hidden" onchange="uploadPost(this)"></label>
+            chatRoom: (id) => {
+                const chat = state.chats.find(c => c.id === id);
+                return `
+                <div class="flex flex-col h-full bg-black/5 rounded-t-[40px] -mx-5 px-5 pt-4">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="renderView('message')" class="text-[#1E0A40] font-black">← Back</button><h3 class="text-[#1E0A40] font-black text-xl">${chat.name}</h3></div>
+                    <div class="flex-1 space-y-4 overflow-y-auto hide-scroll pb-20">
+                        ${chat.msgs.map(m => `<div class="flex ${m.me ? 'justify-end' : 'justify-start'}"><div class="${m.me ? 'chat-me' : 'chat-other'}">${m.text}</div></div>`).join('')}
+                    </div>
+                    <div class="absolute bottom-6 left-5 right-5 flex gap-2">
+                        <input type="text" id="chat-input" placeholder="Aa" class="flex-1 bg-white p-4 rounded-2xl outline-none font-bold">
+                        <button onclick="sendChatMessage(${id})" class="bg-[#1E0A40] text-white px-6 rounded-2xl font-black">Send</button>
+                    </div>
+                </div>`;
+            },
+
+            settings: () => `
+                <h2 class="text-[#1E0A40] text-3xl font-[900] italic mb-6 mt-4">Settings</h2>
+                <div class="dark-card p-8 flex flex-col items-center gap-6 mb-4">
+                    <div class="relative group">
+                        <img id="profile-img" src="${state.userProfile}" class="w-24 h-24 rounded-full border-4 border-white object-cover">
+                        <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full cursor-pointer"><i data-lucide="camera" class="text-white"></i><input type="file" class="hidden" onchange="changeProfile(this)"></label>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-white font-black text-xl flex items-center justify-center gap-2">${state.userName} <i data-lucide="edit-3" class="w-4 cursor-pointer" onclick="changeName()"></i></h3>
+                        <p class="text-gray-500 text-[10px] uppercase font-black tracking-widest">${state.isAdmin ? 'Administrator' : 'Standard User'}</p>
+                    </div>
                 </div>
-                <div class="space-y-6 overflow-y-auto hide-scroll">
+                ${state.isAdmin ? `<button onclick="addArtistAccount()" class="w-full p-5 mb-3 bg-purple-600 rounded-[25px] text-white font-black">ADD ARTIST ACCOUNT</button>` : ''}
+                <button onclick="location.reload()" class="w-full p-5 dark-card text-red-500 font-black tracking-widest text-sm">LOGOUT</button>`,
+
+            feed: () => `
+                <div class="flex justify-between items-center mb-6 mt-4"><h2 class="text-[#1E0A40] text-3xl font-black italic">Feed</h2><label class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer"><i data-lucide="camera"></i><input type="file" class="hidden" onchange="uploadFeed(this)"></label></div>
+                <div class="space-y-6 pb-20">
                     ${state.posts.map(p => `
                         <div class="dark-card overflow-hidden">
                             <div class="p-4 flex items-center gap-3"><div class="w-8 h-8 bg-white rounded-full"></div><span class="text-white font-bold text-xs">${p.author}</span></div>
-                            <img src="${p.img}" class="w-full aspect-square object-cover">
-                            <div class="p-4 text-white"><p class="text-sm">${p.content}</p></div>
-                        </div>
-                    `).reverse().join('')}
-                </div>`,
-
-            settings: () => `
-                <h2 class="text-[#1E0A40] text-3xl font-black italic mb-6 mt-4">Settings</h2>
-                <div class="dark-card p-8 flex flex-col items-center gap-6 mb-4">
-                    <div class="relative group">
-                        <img id="profile-preview" src="${state.userProfile}" class="w-24 h-24 rounded-full border-4 border-white object-cover">
-                        <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"><i data-lucide="camera" class="text-white"></i><input type="file" class="hidden" onchange="updateProfileImg(this)"></label>
-                    </div>
-                    <div class="text-center">
-                        <h3 class="text-white font-black text-xl flex items-center gap-2">${state.userName} <i data-lucide="edit-3" class="w-4 cursor-pointer" onclick="updateUserName()"></i></h3>
-                        <p class="text-gray-500 text-xs mt-1 uppercase">Standard User</p>
-                    </div>
-                </div>
-                <button onclick="handleLogout()" class="w-full p-5 dark-card text-red-500 font-black tracking-widest text-sm">LOGOUT</button>`,
-
-            rory: () => `<div class="mt-10 dark-card p-6 text-white text-center"><h3 class="font-black">FAN LOUNGE</h3><p class="text-xs text-gray-500 mt-2">댓글 기능 준비 중...</p><input type="text" placeholder="댓글을 남겨주세요" class="w-full mt-4 bg-white/10 p-3 rounded-xl outline-none" onkeypress="if(event.keyCode==13){alert('댓글이 등록되었습니다!');this.value=''}"></div>`
+                            <img src="${p.img}" class="w-full object-cover">
+                            <div class="p-4 space-y-3">
+                                <p class="text-white text-sm">${p.content}</p>
+                                <div class="border-t border-white/5 pt-3">${p.comments.map(c => `<p class="text-[11px] text-gray-400"><b>익명:</b> ${c}</p>`).join('')}</div>
+                                <input type="text" placeholder="Add comment..." class="w-full bg-white/10 p-2 rounded-lg text-xs text-white outline-none" onkeypress="if(event.keyCode==13) addComment(${p.id}, this)">
+                            </div>
+                        </div>`).reverse().join('')}
+                </div>`
         };
 
-        function renderView(name) {
-            footer.style.display = (name === 'home') ? 'none' : 'block';
-            mainView.innerHTML = views[name] ? views[name]() : `<div class="text-center mt-20 font-black italic text-[#1E0A40]">${name.toUpperCase()} 준비 중...</div>`;
+        function renderView(name, id = null) {
+            header.style.display = (name === 'login') ? 'none' : 'flex';
+            footer.style.display = (name === 'login' || name === 'home' || name === 'chatRoom') ? 'none' : 'block';
+            mainView.innerHTML = views[name] ? (id ? views[name](id) : views[name]()) : views['home']();
             lucide.createIcons();
         }
 
-        function goHome() { renderView('home'); }
-
-        // 아티스트 모드 온오프
-        function toggleArtistMode() {
-            if (!state.isArtist) {
-                const name = prompt("무슨 아티스트 이름을 입력해주세요.");
-                if (name) {
-                    state.isArtist = true;
-                    state.artistName = name;
-                    document.getElementById('artist-status').innerText = "Artist ON";
-                    document.getElementById('artist-status').classList.replace('text-gray-500', 'text-purple-600');
-                    document.getElementById('toggle-dot').classList.replace('bg-gray-300', 'bg-purple-600');
-                    document.getElementById('artist-name-display').innerText = `WELCOME, ${name}!`;
-                    document.getElementById('artist-name-display').classList.remove('hidden');
-                }
-            } else {
-                state.isArtist = false;
-                document.getElementById('artist-status').innerText = "Artist OFF";
-                document.getElementById('artist-status').classList.replace('text-purple-600', 'text-gray-500');
-                document.getElementById('toggle-dot').classList.replace('bg-purple-600', 'bg-gray-300');
-                document.getElementById('artist-name-display').classList.add('hidden');
+        function handleLogin() {
+            const id = document.getElementById('login-id').value;
+            const pw = document.getElementById('login-pw').value;
+            if(id === "ROCADE" && pw === "01024773752") {
+                state.isAdmin = true;
+                state.userName = "ROCADE";
+                document.getElementById('artist-dot').className = "w-2 h-2 bg-purple-600 rounded-full animate-pulse";
+                document.getElementById('artist-text').innerText = "Admin Mode";
+                document.getElementById('artist-text').className = "text-[10px] font-black text-purple-600 uppercase";
             }
+            state.currentUser = id || "Guest";
+            renderView('home');
         }
 
-        // 이름 및 프로필 수정
-        function updateUserName() {
-            const n = prompt("새 이름을 입력하세요", state.userName);
-            if(n) { state.userName = n; renderView('settings'); }
+        // 채팅 기능
+        function openChatRoom(id) { renderView('chatRoom', id); }
+        function sendChatMessage(id) {
+            const input = document.getElementById('chat-input');
+            if(!input.value.trim()) return;
+            const chat = state.chats.find(c => c.id === id);
+            chat.msgs.push({me: true, text: input.value});
+            chat.last = input.value;
+            renderView('chatRoom', id);
         }
-        function updateProfileImg(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => { state.userProfile = e.target.result; renderView('settings'); };
-                reader.readAsDataURL(input.files[0]);
-            }
+        function addChatRoom() {
+            const name = prompt("새로운 채팅방 유저명:");
+            if(name) { state.chats.push({id: Date.now(), name, last: "대화를 시작해보세요.", msgs: []}); renderView('message'); }
         }
-
-        // 채팅 관리
-        function addChat() {
-            const name = prompt("추가할 채팅방 이름:");
-            if(name) { state.chats.push({id: Date.now(), name, last: "새 채팅방이 생성되었습니다."}); renderView('message'); }
-        }
-        function deleteChat(id, e) {
+        function deleteChatRoom(id, e) {
             e.stopPropagation();
-            if(confirm("채팅방을 삭제할까요?")) { state.chats = state.chats.filter(c => c.id !== id); renderView('message'); }
+            state.chats = state.chats.filter(c => c.id !== id);
+            renderView('message');
         }
-        function enterChat(name) { alert(name + " 님과의 채팅방에 들어갑니다."); }
 
-        // 피드 업로드
-        function uploadPost(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    state.posts.push({ id: Date.now(), author: state.userName, content: "새로운 사진을 공유했습니다!", img: e.target.result });
-                    renderView('feed');
-                };
-                reader.readAsDataURL(input.files[0]);
+        // 아티스트 계정 추가 기능
+        function addArtistAccount() {
+            const artistName = prompt("추가할 아티스트의 활동명을 입력하세요:");
+            if(artistName) {
+                state.chats.unshift({ id: Date.now(), name: "ARTIST: " + artistName, last: "아티스트가 추가되었습니다.", msgs: [] });
+                alert(artistName + " 아티스트 계정이 생성되었습니다.");
+                renderView('message');
             }
         }
 
-        function handleLogout() { if(confirm("로그아웃 하시겠습니까?")) location.reload(); }
+        // 기타 기능들
+        function goHome() { renderView('home'); }
+        function changeName() { const n = prompt("변경할 이름:"); if(n) { state.userName = n; renderView('settings'); }}
+        function changeProfile(input) { if(input.files[0]) { const reader = new FileReader(); reader.onload=(e)=>{state.userProfile=e.target.result; renderView('settings');}; reader.readAsDataURL(input.files[0]); }}
+        function uploadFeed(input) { if(input.files[0]) { const reader = new FileReader(); reader.onload=(e)=>{state.posts.push({id:Date.now(), author:state.userName, content:"New Photo!", img:e.target.result, comments:[]}); renderView('feed');}; reader.readAsDataURL(input.files[0]); }}
+        function addComment(id, input) { if(!input.value.trim()) return; const p = state.posts.find(x => x.id === id); p.comments.push(input.value); input.value = ''; renderView('feed'); }
 
-        goHome();
+        renderView('login');
     </script>
 </body>
 </html>
