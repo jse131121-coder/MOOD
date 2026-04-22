@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LOYDING - ARCADE SOCIAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
+
+        /* 갤럭시 S24 풀스크린 고정 레이아웃 */
+        html, body {
+            position: fixed; overflow: hidden; width: 100%; height: 100%;
+            font-family: 'Pretendard', sans-serif; margin: 0; padding: 0;
+            background-color: #0F0F12; /* 외곽 배경 */
+        }
+
+        /* 오로라 마블링 배경 애니메이션 */
+        .aurora-bg {
+            background: linear-gradient(135deg, #E0F2FE 0%, #EBE9FE 35%, #F5F3FF 70%, #DBEAFE 100%);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            height: 100%; width: 100%;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #app {
+            height: 100dvh; width: 100%; max-width: 450px;
+            display: flex; flex-direction: column;
+            margin: 0 auto; background: white; position: relative;
+        }
+
+        /* 하단 메뉴 그리드 레이아웃 (이미지 기반) */
+        .menu-container {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            border-radius: 40px 40px 0 0;
+            padding: 25px 20px 40px 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            border-top: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 20px;
+            padding: 12px 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .menu-item:active { transform: scale(0.9); }
+        .menu-item i { color: #1E0A40; width: 24px; height: 24px; margin-bottom: 4px; }
+        .menu-item span { font-size: 10px; font-weight: 800; color: #1E0A40; text-transform: uppercase; }
+
+        /* 채팅 말풍선 (이미지 스타일) */
+        .chat-bubble-me {
+            background: white; color: #1E0A40;
+            border-radius: 20px 20px 4px 20px;
+            padding: 12px 16px; font-weight: 600; font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .chat-bubble-other {
+            background: #25262B; color: white;
+            border-radius: 4px 20px 20px 20px;
+            padding: 12px 16px; font-weight: 600; font-size: 14px;
+        }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="flex justify-center">
+
+    <div id="app" class="overflow-hidden">
+        
+        <header class="flex items-center justify-between p-6 bg-transparent z-50 shrink-0">
+            <div class="bg-[#2ECC71]/20 text-[#2ECC71] px-4 py-1.5 rounded-full text-xs font-black flex items-center gap-2">
+                <span class="w-2 h-2 bg-[#2ECC71] rounded-full"></span> 포이드
+            </div>
+            <div class="text-[#1E0A40]/30 font-black tracking-widest text-lg italic">LOYDING</div>
+        </header>
+
+        <main id="main-view" class="flex-1 aurora-bg overflow-y-auto hide-scroll px-6 relative">
+            <div id="view-content" class="py-4 h-full"></div>
+        </main>
+
+        <nav class="menu-container shrink-0">
+            <button onclick="changeView('call')" class="menu-item"><i data-lucide="phone"></i><span>Call</span></button>
+            <button onclick="changeView('message')" class="menu-item"><i data-lucide="mail"></i><span>Message</span></button>
+            <button onclick="changeView('feed')" class="menu-item"><i data-lucide="layout-grid"></i><span>Feed</span></button>
+            <button onclick="changeView('calendar')" class="menu-item"><i data-lucide="calendar"></i><span>Calendar</span></button>
+            <button onclick="changeView('rory')" class="menu-item"><i data-lucide="smile"></i><span>Rory</span></button>
+            <button onclick="changeView('letter')" class="menu-item"><i data-lucide="pen-tool"></i><span>Letter</span></button>
+            <button onclick="changeView('settings')" class="menu-item"><i data-lucide="settings"></i><span>Settings</span></button>
+            <button onclick="location.reload()" class="menu-item"><i data-lucide="refresh-cw"></i><span>Refresh</span></button>
+        </nav>
+    </div>
+
+    <script>
+        const viewContent = document.getElementById('view-content');
+
+        // 각 탭별 화면 정의
+        const views = {
+            call: `
+                <div class="bg-[#1A1B1E] rounded-[35px] p-6 text-white h-full overflow-y-auto hide-scroll border border-white/10 shadow-2xl">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-pink-100 rounded-full"></div>
+                            <div>
+                                <h3 class="font-black text-lg">하리의 생일파티 🎂</h3>
+                                <p class="text-xs text-gray-400">HARING · 2026.04.04 23:40</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="bg-gray-800 px-3 py-1.5 rounded-lg text-xs font-bold">목록</button>
+                            <button class="bg-white text-black px-3 py-1.5 rounded-lg text-xs font-black italic uppercase">REPLAY</button>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="flex flex-col items-end gap-1">
+                            <div class="chat-bubble-me">잘 자고 꿈도 꾸지 말고 푹 자기♡</div>
+                            <span class="text-[10px] text-gray-500">00:01</span>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="text-[10px] font-bold text-gray-400 mr-1">에로</span>
+                            <div class="chat-bubble-me">연하리 언제나 사랑해!!</div>
+                            <span class="text-[10px] text-gray-500">00:02</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 bg-pink-100 rounded-full shrink-0"></div>
+                            <div class="flex flex-col items-start gap-1">
+                                <span class="text-[10px] font-bold text-gray-400">HARING ✔</span>
+                                <div class="chat-bubble-other bg-gray-800">🎵 오하추 - 백만송이는 아니지만(원필)<br>고마워(TREASURE)</div>
+                                <span class="text-[10px] text-gray-500">00:02</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            message: `<div class="h-full flex flex-col items-center justify-center text-[#1E0A40] font-black italic">MESSAGE LIST</div>`,
+            feed: `<div class="h-full flex flex-col items-center justify-center text-[#1E0A40] font-black italic">FEED CONTENT</div>`,
+            calendar: `<div class="h-full flex flex-col items-center justify-center text-[#1E0A40] font-black italic">APRIL 2026</div>`,
+            rory: `<div class="h-full flex flex-col items-center justify-center text-[#1E0A40] font-black italic">FAN LOUNGE</div>`,
+            letter: `<div class="h-full flex flex-col items-center justify-center text-[#1E0A40] font-black italic">WRITE A LETTER</div>`,
+            settings: `<div class="h-full flex flex-col items-center justify-center text-[#1E0A40] font-black italic">APP SETTINGS</div>`
+        };
+
+        function changeView(tab) {
+            viewContent.style.opacity = 0;
+            setTimeout(() => {
+                viewContent.innerHTML = views[tab];
+                viewContent.style.opacity = 1;
+                lucide.createIcons();
+            }, 150);
+        }
+
+        // 초기 화면 설정
+        changeView('call');
+        lucide.createIcons();
+    </script>
+</body>
+</html>
