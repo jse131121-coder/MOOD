@@ -6,157 +6,200 @@
     <title>MOOD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400&display=swap');
-        body { 
-            font-family: 'Noto Sans KR', sans-serif; 
-            background-color: #ffffff; 
-            color: #1a1a1a;
-            -webkit-font-smoothing: antialiased;
-        }
-        input, textarea { font-family: inherit; }
-        .post-item { border-bottom: 1px solid #f0f0f0; }
-        .post-item:last-child { border-bottom: none; }
-        /* 스크롤바 숨기기 */
-        ::-webkit-scrollbar { display: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #333; }
+        .glass-modal { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .just-btn { background-color: #dbeafe; color: white; transition: all 0.2s; }
+        .just-btn:hover { background-color: #bfdbfe; }
+        .post-card { border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .add-btn { background-color: #dbeafe; box-shadow: 0 4px 15px rgba(219, 234, 254, 0.5); }
     </style>
 </head>
-<body class="selection:bg-gray-100">
+<body class="bg-[#f8f9fa]">
 
-    <nav class="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-sm z-50">
-        <div class="max-w-2xl mx-auto px-6 py-8 flex justify-between items-baseline">
-            <h1 class="text-sm font-light tracking-[0.2em] cursor-pointer" onclick="location.reload()">MOOD</h1>
-            <button id="loginBtn" onclick="toggleLogin()" class="text-[10px] tracking-widest text-gray-400 hover:text-black transition-colors">JUST</button>
+    <nav class="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div class="max-w-xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight">MOOD</h1>
+            <button onclick="openLogin()" class="just-btn px-6 py-2 rounded-xl font-bold text-sm">JUST</button>
         </div>
     </nav>
 
-    <main class="max-w-2xl mx-auto px-6 pt-32 pb-40">
-        
-        <section id="writeSection" class="hidden mb-20">
-            <div class="space-y-6">
-                <input type="text" id="postTitle" placeholder="제목" class="w-full text-xl font-light outline-none placeholder:text-gray-200">
-                <textarea id="postContent" placeholder="내용을 입력하세요." class="w-full h-40 resize-none outline-none text-sm leading-relaxed text-gray-500 placeholder:text-gray-200"></textarea>
-                
-                <div class="flex items-center justify-between pt-4">
-                    <label class="flex items-center gap-2 text-[10px] text-gray-300 cursor-pointer uppercase tracking-tighter">
-                        <input type="checkbox" id="postPinned" class="w-3 h-3 rounded-full border-gray-200 checked:bg-black appearance-none border transition-all"> 
-                        Pin to top
-                    </label>
-                    <button onclick="addPost()" class="text-[10px] tracking-[0.2em] border border-black px-6 py-2 hover:bg-black hover:text-white transition-all">POST</button>
-                </div>
+    <main class="max-w-xl mx-auto px-4 mt-8">
+        <div class="bg-white post-card p-6 min-h-[400px]">
+            <div class="flex justify-between items-center mb-6">
+                <span class="bg-gray-100 px-4 py-1.5 rounded-full text-xs text-gray-500 font-medium">게시글</span>
+                <select class="border-gray-200 border rounded-full px-4 py-1 text-xs outline-none bg-white">
+                    <option>전체</option>
+                </select>
             </div>
-            <div class="h-[1px] bg-gray-100 my-16"></div>
-        </section>
 
-        <div id="feedList" class="space-y-20">
-            <div class="text-center py-20 text-gray-300 text-xs tracking-widest font-light">
-                저장된 기록이 없습니다.
+            <div id="feed" class="divide-y divide-gray-50">
+                <div id="emptyMsg" class="py-20 text-center text-gray-300 text-sm">
+                    아직 작성된 게시글이 없습니다.
+                </div>
             </div>
         </div>
     </main>
 
+    <button id="addBtn" onclick="openWrite()" class="hidden fixed bottom-8 right-8 w-14 h-14 add-btn rounded-full text-white text-3xl flex items-center justify-center z-50 hover:scale-110 transition-transform">
+        +
+    </button>
+
+    <div id="loginModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/20 px-4">
+        <div class="bg-white w-full max-w-sm rounded-[30px] p-8 relative">
+            <button onclick="closeModal('loginModal')" class="absolute top-6 right-6 text-gray-400">X</button>
+            <h2 class="text-lg font-bold mb-8">JUST</h2>
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 block mb-2 uppercase">Say</label>
+                    <input id="userId" type="text" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none focus:border-blue-100">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 block mb-2 uppercase">Like</label>
+                    <input id="userPw" type="password" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none focus:border-blue-100">
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button onclick="closeModal('loginModal')" class="px-6 py-2 text-xs font-bold text-gray-400">STOP</button>
+                    <button onclick="handleLogin()" class="just-btn px-6 py-2 text-xs font-bold rounded-xl">GO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="writeModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/20 px-4">
+        <div class="bg-white w-full max-w-md rounded-[30px] p-8">
+            <h2 class="text-lg font-bold mb-4">새로운 기록</h2>
+            <input id="postTitle" type="text" placeholder="제목" class="w-full mb-4 border-b border-gray-100 py-2 outline-none">
+            <textarea id="postContent" placeholder="내용을 입력하세요." class="w-full h-40 resize-none outline-none text-sm"></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('writeModal')" class="px-4 py-2 text-xs">취소</button>
+                <button onclick="savePost()" class="just-btn px-6 py-2 rounded-xl text-xs font-bold">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/20 px-4">
+        <div class="bg-white w-full max-w-lg rounded-[30px] p-8 max-h-[85vh] overflow-y-auto relative">
+            <button onclick="closeModal('detailModal')" class="absolute top-6 right-6 text-gray-400">X</button>
+            <div id="postDetailContent"></div>
+            
+            <div class="mt-8 pt-6 border-t border-gray-100">
+                <h3 class="text-sm font-bold mb-4">댓글</h3>
+                <div id="commentList" class="space-y-4 mb-6"></div>
+                
+                <div class="flex gap-2 sticky bottom-0 bg-white pt-2">
+                    <input id="commentInput" type="text" placeholder="댓글을 입력하세요" class="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-xs outline-none">
+                    <button onclick="addComment()" class="bg-white border border-gray-100 px-4 py-2 rounded-xl text-xs font-bold">등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let isLoggedIn = false;
         let posts = [];
+        let currentPostId = null;
 
-        function toggleLogin() {
-            isLoggedIn = !isLoggedIn;
-            const btn = document.getElementById('loginBtn');
-            const section = document.getElementById('writeSection');
-            btn.innerText = isLoggedIn ? 'LOGOUT' : 'JUST';
-            btn.style.color = isLoggedIn ? 'black' : '';
-            section.classList.toggle('hidden');
+        // 모달 제어
+        function openLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
+        function openWrite() { document.getElementById('writeModal').classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // 로그인 처리
+        function handleLogin() {
+            isLoggedIn = true;
+            document.getElementById('addBtn').classList.remove('hidden');
+            closeModal('loginModal');
+            alert('로그인되었습니다.');
         }
 
-        function addPost() {
-            const title = document.getElementById('postTitle');
-            const content = document.getElementById('postContent');
-            const pinned = document.getElementById('postPinned');
+        // 글 저장
+        function savePost() {
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            if(!title || !content) return;
 
-            if(!title.value || !content.value) return;
-
-            const newPost = {
+            const post = {
                 id: Date.now(),
-                title: title.value,
-                content: content.value,
-                pinned: pinned.checked,
-                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                title,
+                content,
+                date: new Date().toLocaleString(),
                 comments: []
             };
-
-            posts = [newPost, ...posts].sort((a, b) => b.pinned - a.pinned);
-            title.value = ''; content.value = ''; pinned.checked = false;
-            renderPosts();
+            posts.push(post);
+            renderFeed();
+            closeModal('writeModal');
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
         }
 
-        function addComment(postId) {
-            const input = document.getElementById(`cInput-${postId}`);
-            if(!input.value.trim()) return;
-
-            const post = posts.find(p => p.id === postId);
-            post.comments.push({ id: Date.now(), text: input.value, replies: [] });
-            renderPosts();
-        }
-
-        function addReply(postId, commentId) {
-            const input = document.getElementById(`rInput-${postId}-${commentId}`);
-            if(!input.value.trim()) return;
-
-            const post = posts.find(p => p.id === postId);
-            const comment = post.comments.find(c => c.id === commentId);
-            comment.replies.push({ id: Date.now(), text: input.value });
-            renderPosts();
-        }
-
-        function renderPosts() {
-            const feed = document.getElementById('feedList');
-            if(posts.length === 0) return;
-
+        // 피드 렌더링
+        function renderFeed() {
+            const feed = document.getElementById('feed');
+            const empty = document.getElementById('emptyMsg');
+            if(posts.length > 0) empty.classList.add('hidden');
+            
             feed.innerHTML = posts.map(post => `
-                <article class="group">
-                    <div class="flex items-baseline justify-between mb-6">
-                        <h2 class="text-lg font-normal tracking-tight text-gray-900">${post.title}</h2>
-                        <div class="flex items-center gap-3">
-                            ${post.pinned ? '<span class="text-[9px] tracking-tighter text-gray-300 italic">pinned</span>' : ''}
-                            <span class="text-[9px] tracking-widest text-gray-300 uppercase">${post.date}</span>
-                        </div>
-                    </div>
-                    
-                    <p class="text-[13px] leading-[1.8] text-gray-500 font-light whitespace-pre-wrap mb-10">
-                        ${post.content}
-                    </p>
-
-                    <div class="mt-10 pt-6 border-t border-gray-50">
-                        <div class="flex items-center gap-3 mb-6">
-                            <input id="cInput-${post.id}" type="text" placeholder="Comment" 
-                                class="flex-1 text-[11px] font-light outline-none border-b border-transparent focus:border-gray-100 py-1 transition-all">
-                            <button onclick="addComment(${post.id})" class="text-[9px] tracking-widest text-gray-400 hover:text-black">SEND</button>
-                        </div>
-
-                        <div class="space-y-4">
-                            ${post.comments.map(comment => `
-                                <div class="group/comment">
-                                    <div class="flex justify-between items-start">
-                                        <p class="text-[11px] text-gray-400 font-light leading-relaxed">${comment.text}</p>
-                                        <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="text-[9px] text-gray-300 ml-2">reply</button>
-                                    </div>
-                                    
-                                    <div class="hidden mt-2 flex items-center gap-2 pl-4">
-                                        <input id="rInput-${post.id}-${comment.id}" type="text" placeholder="Reply" 
-                                            class="flex-1 text-[10px] font-light outline-none border-b border-gray-50 py-1">
-                                        <button onclick="addReply(${post.id}, ${comment.id})" class="text-[9px] text-gray-400">SEND</button>
-                                    </div>
-
-                                    <div class="mt-2 space-y-2 pl-4 border-l border-gray-50">
-                                        ${comment.replies.map(reply => `
-                                            <p class="text-[10px] text-gray-300 font-light italic">↳ ${reply.text}</p>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                </article>
+                <div onclick="openDetail(${post.id})" class="py-6 cursor-pointer hover:bg-gray-50 transition flex justify-between items-center px-2">
+                    <h3 class="font-bold text-gray-800">${post.title}</h3>
+                    <span class="text-[10px] text-gray-300">MOOD ✔</span>
+                </div>
             `).join('');
+        }
+
+        // 상세 보기
+        function openDetail(id) {
+            currentPostId = id;
+            const post = posts.find(p => p.id === id);
+            document.getElementById('postDetailContent').innerHTML = `
+                <h2 class="text-xl font-bold mb-2">${post.title}</h2>
+                <p class="text-[10px] text-gray-400 mb-6">Admin · ${post.date}</p>
+                <p class="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap">${post.content}</p>
+            `;
+            renderComments();
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        // 댓글 렌더링 (대댓글 포함)
+        function renderComments() {
+            const post = posts.find(p => p.id === currentPostId);
+            const list = document.getElementById('commentList');
+            list.innerHTML = post.comments.map(c => `
+                <div class="border-b border-gray-50 pb-3">
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="text-[11px] font-bold">무디</span>
+                        <span class="text-[9px] text-gray-300">2026.04.22</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mb-2">${c.text}</p>
+                    <div class="flex gap-2 items-center">
+                        <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="text-[9px] text-gray-400">답글 달기</button>
+                        <div class="hidden flex-1 flex gap-2 mt-2">
+                            <input type="text" placeholder="답글 내용" class="flex-1 text-[10px] border-b outline-none">
+                            <button onclick="addReply(${c.id}, this.previousElementSibling)" class="text-[9px] font-bold">전송</button>
+                        </div>
+                    </div>
+                    ${c.replies ? c.replies.map(r => `<p class="ml-4 mt-2 text-[10px] text-gray-400 font-light">↳ ${r}</p>`).join('') : ''}
+                </div>
+            `).join('');
+        }
+
+        function addComment() {
+            const input = document.getElementById('commentInput');
+            if(!input.value) return;
+            const post = posts.find(p => p.id === currentPostId);
+            post.comments.push({ id: Date.now(), text: input.value, replies: [] });
+            input.value = '';
+            renderComments();
+        }
+
+        function addReply(commentId, input) {
+            if(!input.value) return;
+            const post = posts.find(p => p.id === currentPostId);
+            const comment = post.comments.find(c => c.id === commentId);
+            if(!comment.replies) comment.replies = [];
+            comment.replies.push(input.value);
+            input.value = '';
+            renderComments();
         }
     </script>
 </body>
