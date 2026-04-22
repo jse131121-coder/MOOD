@@ -8,76 +8,39 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
-
-        html, body {
-            position: fixed; overflow: hidden; width: 100%; height: 100%;
-            font-family: 'Pretendard', sans-serif; margin: 0; padding: 0;
-            background-color: #000;
-        }
-
-        .aurora-bg {
-            position: absolute; inset: 0; z-index: -1;
-            background: linear-gradient(125deg, #E0F2FE 0%, #EBE9FE 40%, #F5F3FF 70%, #DBEAFE 100%);
-            background-size: 300% 300%;
-            animation: auroraMove 15s ease infinite;
-        }
-        @keyframes auroraMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
+        html, body { position: fixed; overflow: hidden; width: 100%; height: 100%; font-family: 'Pretendard', sans-serif; margin: 0; padding: 0; background-color: #000; }
+        .aurora-bg { position: absolute; inset: 0; z-index: -1; background: linear-gradient(125deg, #E0F2FE 0%, #EBE9FE 40%, #F5F3FF 70%, #DBEAFE 100%); background-size: 300% 300%; animation: auroraMove 15s ease infinite; }
+        @keyframes auroraMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         #app { height: 100dvh; width: 100%; max-width: 450px; display: flex; flex-direction: column; margin: 0 auto; position: relative; }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        
-        .dark-card { background: rgba(26, 27, 30, 0.95); border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
-        .dark-card:active { transform: scale(0.98); }
-
-        /* 홈 화면 메뉴 스타일 (이미지 고증) */
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
-        .home-btn {
-            background: white; border-radius: 30px; aspect-ratio: 1/1;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.3s;
-        }
+        .dark-card { background: rgba(26, 27, 30, 0.95); border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); }
+        .home-btn { background: white; border-radius: 30px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.2s; }
         .home-btn:active { transform: scale(0.9); }
-        .home-btn i { color: #1E0A40; width: 40px; height: 40px; margin-bottom: 8px; }
-        .home-btn span { font-size: 14px; font-weight: 900; color: #1E0A40; text-transform: uppercase; letter-spacing: -0.5px; }
-
-        /* 하단 내비게이션 바 (홈 제외 다른 화면에서만 표시) */
-        .bottom-nav {
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px);
-            border-radius: 35px 35px 0 0; padding: 15px 10px calc(15px + env(safe-area-inset-bottom));
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-        }
-        .nav-tab {
-            background: white; border-radius: 15px; padding: 10px 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
-        .nav-tab span { font-size: 9px; font-weight: 800; margin-top: 3px; color: #1E0A40; }
+        .nav-tab { background: white; border-radius: 15px; padding: 10px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
     </style>
 </head>
 <body>
-
     <div class="aurora-bg"></div>
-
     <div id="app">
-        <header class="flex items-center justify-between p-6 shrink-0 z-50">
-            <div id="status-pill" class="bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full text-[#2ECC71] text-xs font-black flex items-center gap-2 shadow-sm">
-                <span class="w-2 h-2 bg-[#2ECC71] rounded-full animate-pulse"></span> <span id="user-status">포이드</span>
+        <header class="p-6 shrink-0 z-50 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <div id="artist-toggle" onclick="toggleArtistMode()" class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm cursor-pointer flex items-center gap-2 transition-all">
+                    <div id="toggle-dot" class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                    <span id="artist-status" class="text-[10px] font-black text-gray-500 uppercase tracking-tighter">Artist OFF</span>
+                </div>
+                <div onclick="goHome()" class="text-[#1E0A40] font-[900] tracking-tighter text-2xl italic cursor-pointer">LOYDING</div>
             </div>
-            <div onclick="goHome()" class="text-[#1E0A40] font-[900] tracking-tighter text-2xl italic cursor-pointer">LOYDING</div>
+            <div id="artist-name-display" class="hidden animate-bounce bg-purple-600 text-white text-[10px] font-black px-4 py-1 rounded-full w-fit mx-auto"></div>
         </header>
 
-        <main id="main-view" class="flex-1 overflow-y-auto hide-scroll px-5"></main>
+        <main id="main-view" class="flex-1 overflow-y-auto hide-scroll px-5 pb-10"></main>
 
-        <footer id="footer-nav" class="hidden">
-            <nav class="bottom-nav">
-                <button onclick="goHome()" class="nav-tab"><i data-lucide="home" class="w-5 text-[#1E0A40]"></i><span>HOME</span></button>
-                <button onclick="renderView('message')" class="nav-tab"><i data-lucide="mail" class="w-5 text-[#1E0A40]"></i><span>CHAT</span></button>
-                <button onclick="renderView('feed')" class="nav-tab"><i data-lucide="layout-grid" class="w-5 text-[#1E0A40]"></i><span>FEED</span></button>
-                <button onclick="renderView('settings')" class="nav-tab"><i data-lucide="settings" class="w-5 text-[#1E0A40]"></i><span>SET</span></button>
+        <footer id="footer-nav" class="hidden p-4 shrink-0">
+            <nav class="grid grid-cols-4 gap-2 bg-white/80 backdrop-blur-md p-3 rounded-[30px]">
+                <button onclick="goHome()" class="nav-tab"><i data-lucide="home" class="w-5 text-[#1E0A40]"></i></button>
+                <button onclick="renderView('message')" class="nav-tab"><i data-lucide="mail" class="w-5 text-[#1E0A40]"></i></button>
+                <button onclick="renderView('feed')" class="nav-tab"><i data-lucide="image" class="w-5 text-[#1E0A40]"></i></button>
+                <button onclick="renderView('settings')" class="nav-tab"><i data-lucide="settings" class="w-5 text-[#1E0A40]"></i></button>
             </nav>
         </footer>
     </div>
@@ -86,140 +49,150 @@
         const mainView = document.getElementById('main-view');
         const footer = document.getElementById('footer-nav');
 
-        // 상태 관리
+        // 상태 관리 (로컬스토리지 활용 가능)
         let state = {
-            isLoggedIn: true,
-            userName: "포이드",
-            currentTheme: "light"
+            userName: "ROSSY",
+            userProfile: "https://i.pravatar.cc/150?u=rossy",
+            isArtist: false,
+            artistName: "",
+            chats: [
+                { id: 1, name: "LOYD", last: "어때 어때" },
+                { id: 2, name: "서리닝", last: "포이드 믿는당ㅁ" }
+            ],
+            posts: [
+                { id: 1, author: "LOYDING", content: "오늘 날씨 대박! 다들 뭐해요?", img: "https://picsum.photos/400/400" }
+            ]
         };
 
         const views = {
-            // [HOME] 앱 선택 화면 (첫 화면)
-            home: `
-                <div class="menu-grid animate-in fade-in zoom-in duration-300">
-                    <button onclick="renderView('call')" class="home-btn"><i data-lucide="phone"></i><span>Call</span></button>
-                    <button onclick="renderView('message')" class="home-btn"><i data-lucide="mail"></i><span>Message</span></button>
-                    <button onclick="renderView('feed')" class="home-btn"><i data-lucide="layout-grid"></i><span>Feed</span></button>
-                    <button onclick="renderView('calendar')" class="home-btn"><i data-lucide="calendar"></i><span>Calendar</span></button>
-                    <button onclick="renderView('rory')" class="home-btn"><i data-lucide="smile"></i><span>Rory</span></button>
-                    <button onclick="renderView('letter')" class="home-btn"><i data-lucide="pen-tool"></i><span>Letter</span></button>
-                    <button onclick="renderView('settings')" class="home-btn"><i data-lucide="settings"></i><span>Settings</span></button>
-                    <button onclick="location.reload()" class="home-btn"><i data-lucide="refresh-cw"></i><span>Refresh</span></button>
+            home: () => `
+                <div class="grid grid-cols-2 gap-4 py-4">
+                    <button onclick="renderView('message')" class="home-btn"><i data-lucide="mail"></i><span class="text-[11px] font-black mt-2">MESSAGE</span></button>
+                    <button onclick="renderView('feed')" class="home-btn"><i data-lucide="layout-grid"></i><span class="text-[11px] font-black mt-2">FEED</span></button>
+                    <button onclick="renderView('rory')" class="home-btn"><i data-lucide="smile"></i><span class="text-[11px] font-black mt-2">RORY</span></button>
+                    <button onclick="renderView('letter')" class="home-btn"><i data-lucide="pen-tool"></i><span class="text-[11px] font-black mt-2">LETTER</span></button>
+                    <button onclick="renderView('calendar')" class="home-btn"><i data-lucide="calendar"></i><span class="text-[11px] font-black mt-2">CALENDAR</span></button>
+                    <button onclick="renderView('settings')" class="home-btn"><i data-lucide="settings"></i><span class="text-[11px] font-black mt-2">SETTINGS</span></button>
+                </div>`,
+
+            message: () => `
+                <div class="flex justify-between items-center mb-6 mt-4">
+                    <h2 class="text-[#1E0A40] text-3xl font-black italic">Message</h2>
+                    <button onclick="addChat()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus" class="text-[#1E0A40]"></i></button>
                 </div>
-            `,
-            // [MESSAGE] 채팅 목록
-            message: `
-                <h2 class="text-[#1E0A40] text-3xl font-black italic mb-6 mt-4">Message</h2>
-                <div class="space-y-3 pb-10">
-                    ${['LOYD', '서리닝', 'HARING', '로망망 🐾', 'DANANG'].map(name => `
-                        <div class="dark-card p-5 flex items-center gap-4">
-                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center font-black text-[#1E0A40] text-xl">${name[0]}</div>
+                <div class="space-y-3">
+                    ${state.chats.map(chat => `
+                        <div class="dark-card p-5 flex items-center gap-4 relative" onclick="enterChat('${chat.name}')">
+                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center font-black">${chat.name[0]}</div>
                             <div class="flex-1 text-white">
-                                <div class="flex justify-between items-center"><span class="font-black text-lg">${name}</span><span class="text-[10px] text-gray-500 uppercase">12:30 PM</span></div>
-                                <p class="text-gray-400 text-sm truncate">메시지가 도착했습니다.</p>
+                                <h3 class="font-black text-lg">${chat.name}</h3>
+                                <p class="text-gray-400 text-sm">${chat.last}</p>
                             </div>
+                            <button onclick="deleteChat(${chat.id}, event)" class="text-red-500 p-2"><i data-lucide="trash-2" class="w-4"></i></button>
                         </div>
                     `).join('')}
+                </div>`,
+
+            feed: () => `
+                <div class="flex justify-between items-center mb-6 mt-4">
+                    <h2 class="text-[#1E0A40] text-3xl font-black italic">Feed</h2>
+                    <label class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer"><i data-lucide="camera" class="text-[#1E0A40]"></i><input type="file" class="hidden" onchange="uploadPost(this)"></label>
                 </div>
-            `,
-            // [CALENDAR] 4월 달력
-            calendar: `
-                <div class="dark-card p-6 text-white h-fit mt-4">
-                    <div class="flex justify-between items-center mb-6"><h3 class="font-black text-xl">APRIL 2026</h3><i data-lucide="chevron-right"></i></div>
-                    <div class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-gray-500 mb-4">
-                        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-                    </div>
-                    <div class="grid grid-cols-7 gap-2 text-center font-bold">
-                        ${Array.from({length: 30}, (_, i) => `<div class="py-2 ${i+1 === 22 ? 'bg-purple-600 rounded-lg' : ''}">${i+1}</div>`).join('')}
-                    </div>
-                </div>
-            `,
-            // [RORY] 팬 라운지
-            rory: `
-                <h2 class="text-[#1E0A40] text-3xl font-black italic mb-6 mt-4">Rory Lounge</h2>
-                <div class="space-y-4">
-                    <div class="dark-card p-6 text-white">
-                        <span class="text-purple-400 font-black text-xs uppercase">Notice</span>
-                        <p class="font-bold mt-1">LOYDING 공식 팬덤 명칭 공모 안내</p>
-                    </div>
-                    <div class="dark-card p-6 text-white">
-                        <div class="flex items-center gap-2 mb-2"><div class="w-6 h-6 bg-gray-600 rounded-full"></div><span class="text-xs font-bold">User_99</span></div>
-                        <p class="text-sm">오늘 라이브 너무 재밌었어요!! 다들 굿밤 🌙</p>
-                    </div>
-                </div>
-            `,
-            // [SETTINGS] 설정창 (기능 작동)
-            settings: `
+                <div class="space-y-6 overflow-y-auto hide-scroll">
+                    ${state.posts.map(p => `
+                        <div class="dark-card overflow-hidden">
+                            <div class="p-4 flex items-center gap-3"><div class="w-8 h-8 bg-white rounded-full"></div><span class="text-white font-bold text-xs">${p.author}</span></div>
+                            <img src="${p.img}" class="w-full aspect-square object-cover">
+                            <div class="p-4 text-white"><p class="text-sm">${p.content}</p></div>
+                        </div>
+                    `).reverse().join('')}
+                </div>`,
+
+            settings: () => `
                 <h2 class="text-[#1E0A40] text-3xl font-black italic mb-6 mt-4">Settings</h2>
-                <div class="space-y-3">
-                    <div class="dark-card p-6 flex justify-between items-center text-white font-bold">
-                        <span>사용자 이름</span>
-                        <span class="text-purple-400" onclick="editName()">${state.userName} ></span>
+                <div class="dark-card p-8 flex flex-col items-center gap-6 mb-4">
+                    <div class="relative group">
+                        <img id="profile-preview" src="${state.userProfile}" class="w-24 h-24 rounded-full border-4 border-white object-cover">
+                        <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"><i data-lucide="camera" class="text-white"></i><input type="file" class="hidden" onchange="updateProfileImg(this)"></label>
                     </div>
-                    <div class="dark-card p-6 flex justify-between items-center text-white font-bold">
-                        <span>다크 모드 전용</span>
-                        <div class="w-10 h-5 bg-purple-600 rounded-full relative"><div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div></div>
-                    </div>
-                    <div class="dark-card p-6 flex justify-between items-center text-red-400 font-black cursor-pointer" onclick="handleLogout()">
-                        <span>LOGOUT</span>
-                        <i data-lucide="log-out" class="w-5"></i>
+                    <div class="text-center">
+                        <h3 class="text-white font-black text-xl flex items-center gap-2">${state.userName} <i data-lucide="edit-3" class="w-4 cursor-pointer" onclick="updateUserName()"></i></h3>
+                        <p class="text-gray-500 text-xs mt-1 uppercase">Standard User</p>
                     </div>
                 </div>
-            `,
-            // [LOGIN] 로그아웃 후 보여질 화면
-            login: `
-                <div class="h-full flex flex-col items-center justify-center animate-in fade-in duration-500">
-                    <div class="dark-card p-10 w-full text-center">
-                        <h1 class="text-4xl font-[900] text-white italic mb-10">SIGN IN</h1>
-                        <input type="text" placeholder="ID" class="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-white font-bold mb-4 outline-none">
-                        <button onclick="handleLogin()" class="w-full bg-white text-[#1E0A40] py-4 rounded-2xl font-black text-lg">ENTER</button>
-                    </div>
-                </div>
-            `
+                <button onclick="handleLogout()" class="w-full p-5 dark-card text-red-500 font-black tracking-widest text-sm">LOGOUT</button>`,
+
+            rory: () => `<div class="mt-10 dark-card p-6 text-white text-center"><h3 class="font-black">FAN LOUNGE</h3><p class="text-xs text-gray-500 mt-2">댓글 기능 준비 중...</p><input type="text" placeholder="댓글을 남겨주세요" class="w-full mt-4 bg-white/10 p-3 rounded-xl outline-none" onkeypress="if(event.keyCode==13){alert('댓글이 등록되었습니다!');this.value=''}"></div>`
         };
 
         function renderView(name) {
-            // 홈 화면에서는 하단바 숨김, 그 외 화면은 노출
-            footer.style.display = (name === 'home' || name === 'login') ? 'none' : 'block';
-            
-            mainView.style.opacity = '0';
-            setTimeout(() => {
-                mainView.innerHTML = views[name] || `<div class="text-white mt-10">Coming Soon...</div>`;
-                mainView.style.opacity = '1';
-                lucide.createIcons();
-            }, 100);
+            footer.style.display = (name === 'home') ? 'none' : 'block';
+            mainView.innerHTML = views[name] ? views[name]() : `<div class="text-center mt-20 font-black italic text-[#1E0A40]">${name.toUpperCase()} 준비 중...</div>`;
+            lucide.createIcons();
         }
 
-        function goHome() {
-            if(!state.isLoggedIn) return renderView('login');
-            renderView('home');
-        }
+        function goHome() { renderView('home'); }
 
-        function editName() {
-            const newName = prompt("변경할 이름을 입력하세요", state.userName);
-            if(newName) {
-                state.userName = newName;
-                document.getElementById('user-status').innerText = newName;
-                renderView('settings');
+        // 아티스트 모드 온오프
+        function toggleArtistMode() {
+            if (!state.isArtist) {
+                const name = prompt("무슨 아티스트 이름을 입력해주세요.");
+                if (name) {
+                    state.isArtist = true;
+                    state.artistName = name;
+                    document.getElementById('artist-status').innerText = "Artist ON";
+                    document.getElementById('artist-status').classList.replace('text-gray-500', 'text-purple-600');
+                    document.getElementById('toggle-dot').classList.replace('bg-gray-300', 'bg-purple-600');
+                    document.getElementById('artist-name-display').innerText = `WELCOME, ${name}!`;
+                    document.getElementById('artist-name-display').classList.remove('hidden');
+                }
+            } else {
+                state.isArtist = false;
+                document.getElementById('artist-status').innerText = "Artist OFF";
+                document.getElementById('artist-status').classList.replace('text-purple-600', 'text-gray-500');
+                document.getElementById('toggle-dot').classList.replace('bg-purple-600', 'bg-gray-300');
+                document.getElementById('artist-name-display').classList.add('hidden');
             }
         }
 
-        function handleLogout() {
-            if(confirm("정말 로그아웃 하시겠습니까?")) {
-                state.isLoggedIn = false;
-                renderView('login');
-                document.getElementById('status-pill').style.display = 'none';
+        // 이름 및 프로필 수정
+        function updateUserName() {
+            const n = prompt("새 이름을 입력하세요", state.userName);
+            if(n) { state.userName = n; renderView('settings'); }
+        }
+        function updateProfileImg(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => { state.userProfile = e.target.result; renderView('settings'); };
+                reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function handleLogin() {
-    
-            state.isLoggedIn = true;
-            document.getElementById('status-pill').style.display = 'flex';
-            renderView('home');
+        // 채팅 관리
+        function addChat() {
+            const name = prompt("추가할 채팅방 이름:");
+            if(name) { state.chats.push({id: Date.now(), name, last: "새 채팅방이 생성되었습니다."}); renderView('message'); }
+        }
+        function deleteChat(id, e) {
+            e.stopPropagation();
+            if(confirm("채팅방을 삭제할까요?")) { state.chats = state.chats.filter(c => c.id !== id); renderView('message'); }
+        }
+        function enterChat(name) { alert(name + " 님과의 채팅방에 들어갑니다."); }
+
+        // 피드 업로드
+        function uploadPost(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.posts.push({ id: Date.now(), author: state.userName, content: "새로운 사진을 공유했습니다!", img: e.target.result });
+                    renderView('feed');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
-        // 앱 시작
+        function handleLogout() { if(confirm("로그아웃 하시겠습니까?")) location.reload(); }
+
         goHome();
     </script>
 </body>
