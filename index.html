@@ -2,210 +2,176 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LOYDING</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCADE SOCIAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
-        html, body { position: fixed; overflow: hidden; width: 100%; height: 100%; font-family: 'Pretendard', sans-serif; margin: 0; padding: 0; background-color: #000; }
-        .aurora-bg { position: absolute; inset: 0; z-index: -1; background: linear-gradient(125deg, #E0F2FE 0%, #EBE9FE 40%, #F5F3FF 70%, #DBEAFE 100%); background-size: 300% 300%; animation: auroraMove 15s ease infinite; }
-        @keyframes auroraMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        #app { height: 100dvh; width: 100%; max-width: 450px; display: flex; flex-direction: column; margin: 0 auto; position: relative; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .dark-card { background: rgba(26, 27, 30, 0.95); border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); }
-        .home-btn { background: white; border-radius: 30px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.2s; }
-        .home-btn:active { transform: scale(0.9); }
-        .nav-tab { background: white; border-radius: 15px; padding: 10px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .chat-me { background: white; color: #1E0A40; border-radius: 18px 18px 4px 18px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
-        .chat-other { background: #25262B; color: white; border-radius: 4px 18px 18px 18px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #333; }
+        .dreamy-shadow { box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .post-card { transition: all 0.3s ease; }
+        .pinned-tag { background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe; }
     </style>
 </head>
-<body>
-    <div class="aurora-bg"></div>
-    <div id="app">
-        <header id="header-bar" class="p-6 shrink-0 z-50 flex items-center justify-between hidden">
-            <div id="artist-badge" class="bg-white/90 px-4 py-1.5 rounded-full shadow-sm flex items-center gap-2">
-                <span id="artist-dot" class="w-2 h-2 bg-gray-300 rounded-full"></span>
-                <span id="artist-text" class="text-[10px] font-black text-gray-500 uppercase tracking-tighter">User Mode</span>
+<body class="pb-20">
+
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-2xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tighter text-gray-800">ARCADE</h1>
+            <button id="loginBtn" onclick="toggleLogin()" class="px-5 py-1.5 rounded-full border border-gray-200 text-xs font-medium hover:bg-gray-50 transition-all">
+                JUST
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-6 mt-10">
+        
+        <section id="writeSection" class="hidden mb-12 bg-white rounded-3xl p-6 border border-gray-100 dreamy-shadow">
+            <input type="text" id="postTitle" placeholder="제목을 입력하세요" class="w-full mb-4 text-lg font-bold outline-none placeholder:text-gray-300">
+            <textarea id="postContent" placeholder="오늘의 기록을 남겨보세요." class="w-full h-32 mb-4 resize-none outline-none text-gray-600 placeholder:text-gray-300"></textarea>
+            
+            <div class="flex items-center justify-between pt-4 border-t border-gray-50">
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
+                        <input type="checkbox" id="postPinned" class="rounded border-gray-300 text-blue-500 focus:ring-0"> 📌 상단 고정
+                    </label>
+                </div>
+                <button onclick="addPost()" class="bg-black text-white px-6 py-2 rounded-full text-xs font-bold hover:opacity-80 transition">POST</button>
             </div>
-            <div onclick="goHome()" class="text-[#1E0A40] font-[900] tracking-tighter text-2xl italic cursor-pointer">LOYDING</div>
-        </header>
+        </section>
 
-        <main id="main-view" class="flex-1 overflow-y-auto hide-scroll px-5"></main>
-
-        <footer id="footer-nav" class="hidden p-4 shrink-0">
-            <nav class="grid grid-cols-4 gap-2 bg-white/80 backdrop-blur-md p-3 rounded-[30px]">
-                <button onclick="goHome()" class="nav-tab"><i data-lucide="home" class="w-5 text-[#1E0A40]"></i></button>
-                <button onclick="renderView('message')" class="nav-tab"><i data-lucide="mail" class="w-5 text-[#1E0A40]"></i></button>
-                <button onclick="renderView('feed')" class="nav-tab"><i data-lucide="image" class="w-5 text-[#1E0A40]"></i></button>
-                <button onclick="renderView('settings')" class="nav-tab"><i data-lucide="settings" class="w-5 text-[#1E0A40]"></i></button>
-            </nav>
-        </footer>
-    </div>
+        <div id="feedList" class="space-y-10">
+            </div>
+    </main>
 
     <script>
-        const mainView = document.getElementById('main-view');
-        const footer = document.getElementById('footer-nav');
-        const header = document.getElementById('header-bar');
+        let isLoggedIn = false;
+        let posts = [];
 
-        let state = {
-            currentUser: null,
-            isAdmin: false,
-            userName: "ROSSY",
-            userProfile: "https://i.pravatar.cc/150?u=rossy",
-            chats: [
-                { id: 1, name: "LOYD", last: "어때 어때", msgs: [{me:false, text:"어때 어때"}] },
-                { id: 2, name: "서리닝", last: "포이드 믿는당ㅁ", msgs: [{me:false, text:"포이드 믿는당ㅁ"}] }
-            ],
-            posts: [{ id: 1, author: "LOYDING", content: "환영합니다!", img: "https://picsum.photos/400/400", comments: [] }]
-        };
-
-        const views = {
-            login: () => `
-                <div class="h-full flex flex-col items-center justify-center pt-20">
-                    <div class="dark-card p-10 w-full text-center space-y-6">
-                        <h1 class="text-4xl font-[900] text-white italic tracking-tighter">LOYDING LOGIN</h1>
-                        <input type="text" id="login-id" placeholder="ID" class="w-full bg-white/10 rounded-2xl p-4 text-white font-bold outline-none border border-white/5">
-                        <input type="password" id="login-pw" placeholder="PASSWORD" class="w-full bg-white/10 rounded-2xl p-4 text-white font-bold outline-none border border-white/5">
-                        <button onclick="handleLogin()" class="w-full bg-white text-[#1E0A40] py-4 rounded-2xl font-black text-xl">ENTER</button>
-                    </div>
-                </div>`,
-
-            home: () => `
-                <div class="grid grid-cols-2 gap-4 py-4 animate-in fade-in duration-300">
-                    <button onclick="renderView('call')" class="home-btn"><i data-lucide="phone"></i><span class="text-[11px] font-black mt-2">CALL</span></button>
-                    <button onclick="renderView('message')" class="home-btn"><i data-lucide="mail"></i><span class="text-[11px] font-black mt-2">MESSAGE</span></button>
-                    <button onclick="renderView('feed')" class="home-btn"><i data-lucide="layout-grid"></i><span class="text-[11px] font-black mt-2">FEED</span></button>
-                    <button onclick="renderView('rory')" class="home-btn"><i data-lucide="smile"></i><span class="text-[11px] font-black mt-2">RORY</span></button>
-                    <button onclick="renderView('letter')" class="home-btn"><i data-lucide="pen-tool"></i><span class="text-[11px] font-black mt-2">LETTER</span></button>
-                    <button onclick="renderView('calendar')" class="home-btn"><i data-lucide="calendar"></i><span class="text-[11px] font-black mt-2">CALENDAR</span></button>
-                    <button onclick="renderView('settings')" class="home-btn"><i data-lucide="settings"></i><span class="text-[11px] font-black mt-2">SETTINGS</span></button>
-                    <button onclick="location.reload()" class="home-btn"><i data-lucide="refresh-cw"></i><span class="text-[11px] font-black mt-2">REFRESH</span></button>
-                </div>`,
-
-            message: () => `
-                <div class="flex justify-between items-center mb-6 mt-4">
-                    <h2 class="text-[#1E0A40] text-3xl font-[900] italic">Message</h2>
-                    ${state.isAdmin ? '<button onclick="addChatRoom()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md"><i data-lucide="plus"></i></button>' : ''}
-                </div>
-                <div class="space-y-3">
-                    ${state.chats.map(chat => `
-                        <div class="dark-card p-5 flex items-center gap-4 relative" onclick="openChatRoom(${chat.id})">
-                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center font-black text-[#1E0A40]">${chat.name[0]}</div>
-                            <div class="flex-1 text-white">
-                                <h3 class="font-black text-lg">${chat.name}</h3>
-                                <p class="text-gray-400 text-sm truncate">${chat.last}</p>
-                            </div>
-                            ${state.isAdmin ? `<button onclick="deleteChatRoom(${chat.id}, event)" class="text-red-500 p-2"><i data-lucide="trash-2" class="w-4"></i></button>` : ''}
-                        </div>`).join('')}
-                </div>`,
-
-            chatRoom: (id) => {
-                const chat = state.chats.find(c => c.id === id);
-                return `
-                <div class="flex flex-col h-full bg-black/5 rounded-t-[40px] -mx-5 px-5 pt-4">
-                    <div class="flex items-center gap-4 mb-6"><button onclick="renderView('message')" class="text-[#1E0A40] font-black">← Back</button><h3 class="text-[#1E0A40] font-black text-xl">${chat.name}</h3></div>
-                    <div class="flex-1 space-y-4 overflow-y-auto hide-scroll pb-20">
-                        ${chat.msgs.map(m => `<div class="flex ${m.me ? 'justify-end' : 'justify-start'}"><div class="${m.me ? 'chat-me' : 'chat-other'}">${m.text}</div></div>`).join('')}
-                    </div>
-                    <div class="absolute bottom-6 left-5 right-5 flex gap-2">
-                        <input type="text" id="chat-input" placeholder="Aa" class="flex-1 bg-white p-4 rounded-2xl outline-none font-bold">
-                        <button onclick="sendChatMessage(${id})" class="bg-[#1E0A40] text-white px-6 rounded-2xl font-black">Send</button>
-                    </div>
-                </div>`;
-            },
-
-            settings: () => `
-                <h2 class="text-[#1E0A40] text-3xl font-[900] italic mb-6 mt-4">Settings</h2>
-                <div class="dark-card p-8 flex flex-col items-center gap-6 mb-4">
-                    <div class="relative group">
-                        <img id="profile-img" src="${state.userProfile}" class="w-24 h-24 rounded-full border-4 border-white object-cover">
-                        <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full cursor-pointer"><i data-lucide="camera" class="text-white"></i><input type="file" class="hidden" onchange="changeProfile(this)"></label>
-                    </div>
-                    <div class="text-center">
-                        <h3 class="text-white font-black text-xl flex items-center justify-center gap-2">${state.userName} <i data-lucide="edit-3" class="w-4 cursor-pointer" onclick="changeName()"></i></h3>
-                        <p class="text-gray-500 text-[10px] uppercase font-black tracking-widest">${state.isAdmin ? 'Administrator' : 'Standard User'}</p>
-                    </div>
-                </div>
-                ${state.isAdmin ? `<button onclick="addArtistAccount()" class="w-full p-5 mb-3 bg-purple-600 rounded-[25px] text-white font-black">ADD ARTIST ACCOUNT</button>` : ''}
-                <button onclick="location.reload()" class="w-full p-5 dark-card text-red-500 font-black tracking-widest text-sm">LOGOUT</button>`,
-
-            feed: () => `
-                <div class="flex justify-between items-center mb-6 mt-4"><h2 class="text-[#1E0A40] text-3xl font-black italic">Feed</h2><label class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md cursor-pointer"><i data-lucide="camera"></i><input type="file" class="hidden" onchange="uploadFeed(this)"></label></div>
-                <div class="space-y-6 pb-20">
-                    ${state.posts.map(p => `
-                        <div class="dark-card overflow-hidden">
-                            <div class="p-4 flex items-center gap-3"><div class="w-8 h-8 bg-white rounded-full"></div><span class="text-white font-bold text-xs">${p.author}</span></div>
-                            <img src="${p.img}" class="w-full object-cover">
-                            <div class="p-4 space-y-3">
-                                <p class="text-white text-sm">${p.content}</p>
-                                <div class="border-t border-white/5 pt-3">${p.comments.map(c => `<p class="text-[11px] text-gray-400"><b>익명:</b> ${c}</p>`).join('')}</div>
-                                <input type="text" placeholder="Add comment..." class="w-full bg-white/10 p-2 rounded-lg text-xs text-white outline-none" onkeypress="if(event.keyCode==13) addComment(${p.id}, this)">
-                            </div>
-                        </div>`).reverse().join('')}
-                </div>`
-        };
-
-        function renderView(name, id = null) {
-            header.style.display = (name === 'login') ? 'none' : 'flex';
-            footer.style.display = (name === 'login' || name === 'home' || name === 'chatRoom') ? 'none' : 'block';
-            mainView.innerHTML = views[name] ? (id ? views[name](id) : views[name]()) : views['home']();
-            lucide.createIcons();
-        }
-
-        function handleLogin() {
-            const id = document.getElementById('login-id').value;
-            const pw = document.getElementById('login-pw').value;
-            if(id === "ROCADE" && pw === "01024773752") {
-                state.isAdmin = true;
-                state.userName = "ROCADE";
-                document.getElementById('artist-dot').className = "w-2 h-2 bg-purple-600 rounded-full animate-pulse";
-                document.getElementById('artist-text').innerText = "Admin Mode";
-                document.getElementById('artist-text').className = "text-[10px] font-black text-purple-600 uppercase";
+        // 1. 로그인 토글
+        function toggleLogin() {
+            isLoggedIn = !isLoggedIn;
+            const btn = document.getElementById('loginBtn');
+            const section = document.getElementById('writeSection');
+            
+            if(isLoggedIn) {
+                btn.innerText = 'LOGOUT';
+                btn.classList.add('bg-black', 'text-white', 'border-black');
+                section.classList.remove('hidden');
+            } else {
+                btn.innerText = 'JUST';
+                btn.classList.remove('bg-black', 'text-white', 'border-black');
+                section.classList.add('hidden');
             }
-            state.currentUser = id || "Guest";
-            renderView('home');
         }
 
-        // 채팅 기능
-        function openChatRoom(id) { renderView('chatRoom', id); }
-        function sendChatMessage(id) {
-            const input = document.getElementById('chat-input');
+        // 2. 게시글 추가
+        function addPost() {
+            const title = document.getElementById('postTitle');
+            const content = document.getElementById('postContent');
+            const pinned = document.getElementById('postPinned');
+
+            if(!title.value || !content.value) return alert("내용을 입력해주세요.");
+
+            const newPost = {
+                id: Date.now(),
+                title: title.value,
+                content: content.value,
+                pinned: pinned.checked,
+                date: new Date().toLocaleDateString(),
+                comments: []
+            };
+
+            posts = [newPost, ...posts].sort((a, b) => b.pinned - a.pinned);
+            
+            // 입력창 초기화
+            title.value = '';
+            content.value = '';
+            pinned.checked = false;
+            
+            renderPosts();
+        }
+
+        // 3. 댓글 추가
+        function addComment(postId) {
+            const input = document.getElementById(`commentInput-${postId}`);
             if(!input.value.trim()) return;
-            const chat = state.chats.find(c => c.id === id);
-            chat.msgs.push({me: true, text: input.value});
-            chat.last = input.value;
-            renderView('chatRoom', id);
-        }
-        function addChatRoom() {
-            const name = prompt("새로운 채팅방 유저명:");
-            if(name) { state.chats.push({id: Date.now(), name, last: "대화를 시작해보세요.", msgs: []}); renderView('message'); }
-        }
-        function deleteChatRoom(id, e) {
-            e.stopPropagation();
-            state.chats = state.chats.filter(c => c.id !== id);
-            renderView('message');
+
+            const post = posts.find(p => p.id === postId);
+            post.comments.push({
+                id: Date.now(),
+                text: input.value,
+                replies: []
+            });
+            renderPosts();
         }
 
-        // 아티스트 계정 추가 기능
-        function addArtistAccount() {
-            const artistName = prompt("추가할 아티스트의 활동명을 입력하세요:");
-            if(artistName) {
-                state.chats.unshift({ id: Date.now(), name: "ARTIST: " + artistName, last: "아티스트가 추가되었습니다.", msgs: [] });
-                alert(artistName + " 아티스트 계정이 생성되었습니다.");
-                renderView('message');
-            }
+        // 4. 대댓글 추가
+        function addReply(postId, commentId) {
+            const input = document.getElementById(`replyInput-${postId}-${commentId}`);
+            if(!input.value.trim()) return;
+
+            const post = posts.find(p => p.id === postId);
+            const comment = post.comments.find(c => c.id === commentId);
+            comment.replies.push({
+                id: Date.now(),
+                text: input.value
+            });
+            renderPosts();
         }
 
-        // 기타 기능들
-        function goHome() { renderView('home'); }
-        function changeName() { const n = prompt("변경할 이름:"); if(n) { state.userName = n; renderView('settings'); }}
-        function changeProfile(input) { if(input.files[0]) { const reader = new FileReader(); reader.onload=(e)=>{state.userProfile=e.target.result; renderView('settings');}; reader.readAsDataURL(input.files[0]); }}
-        function uploadFeed(input) { if(input.files[0]) { const reader = new FileReader(); reader.onload=(e)=>{state.posts.push({id:Date.now(), author:state.userName, content:"New Photo!", img:e.target.result, comments:[]}); renderView('feed');}; reader.readAsDataURL(input.files[0]); }}
-        function addComment(id, input) { if(!input.value.trim()) return; const p = state.posts.find(x => x.id === id); p.comments.push(input.value); input.value = ''; renderView('feed'); }
+        // 5. 대댓글 입력창 토글
+        function toggleReplyForm(id) {
+            const form = document.getElementById(id);
+            form.classList.toggle('hidden');
+        }
 
-        renderView('login');
+        // 6. 게시글 렌더링
+        function renderPosts() {
+            const feed = document.getElementById('feedList');
+            feed.innerHTML = posts.map(post => `
+                <article class="post-card bg-white p-8 rounded-[2rem] border border-gray-50 dreamy-shadow relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-[10px] text-gray-400 tracking-widest uppercase">${post.date}</span>
+                        ${post.pinned ? `<span class="pinned-tag text-[10px] px-2 py-0.5 rounded-full font-bold">PINNED</span>` : ''}
+                    </div>
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">${post.title}</h2>
+                    <p class="text-gray-600 leading-relaxed text-sm mb-8 whitespace-pre-wrap">${post.content}</p>
+
+                    <div class="bg-gray-50/50 rounded-2xl p-6 mt-6">
+                        <div class="flex gap-2 mb-6">
+                            <input id="commentInput-${post.id}" type="text" placeholder="댓글을 입력하세요" 
+                                class="flex-1 bg-white border border-gray-100 rounded-full px-4 py-2 text-xs outline-none">
+                            <button onclick="addComment(${post.id})" class="bg-gray-800 text-white px-4 py-2 rounded-full text-[10px] font-bold">SEND</button>
+                        </div>
+
+                        <div class="space-y-4">
+                            ${post.comments.map(comment => `
+                                <div class="border-l-2 border-gray-200 pl-4 py-1">
+                                    <p class="text-xs text-gray-700">${comment.text}</p>
+                                    <button onclick="toggleReplyForm('replyForm-${post.id}-${comment.id}')" class="text-[9px] text-gray-400 mt-1 hover:text-gray-600">답글 달기</button>
+                                    
+                                    <div class="mt-2 space-y-2">
+                                        ${comment.replies.map(reply => `
+                                            <div class="flex items-start gap-2 text-[11px] text-gray-500 bg-white/50 p-2 rounded-lg">
+                                                <span class="text-gray-300">↳</span>
+                                                <span>${reply.text}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+
+                                    <div id="replyForm-${post.id}-${comment.id}" class="hidden mt-3 flex gap-2">
+                                        <input id="replyInput-${post.id}-${comment.id}" type="text" placeholder="답글 내용" 
+                                            class="flex-1 bg-transparent border-b border-gray-200 text-[11px] outline-none py-1">
+                                        <button onclick="addReply(${post.id}, ${comment.id})" class="text-[10px] text-blue-500 font-bold">전송</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
     </script>
 </body>
 </html>
