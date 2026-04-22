@@ -3,167 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCADE SOCIAL</title>
+    <title>MOOD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #333; }
-        .dreamy-shadow { box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
-        .post-card { transition: all 0.3s ease; }
-        .pinned-tag { background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400&display=swap');
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: #ffffff; 
+            color: #1a1a1a;
+            -webkit-font-smoothing: antialiased;
+        }
+        input, textarea { font-family: inherit; }
+        .post-item { border-bottom: 1px solid #f0f0f0; }
+        .post-item:last-child { border-bottom: none; }
+        /* 스크롤바 숨기기 */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="pb-20">
+<body class="selection:bg-gray-100">
 
-    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div class="max-w-2xl mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tighter text-gray-800">ARCADE</h1>
-            <button id="loginBtn" onclick="toggleLogin()" class="px-5 py-1.5 rounded-full border border-gray-200 text-xs font-medium hover:bg-gray-50 transition-all">
-                JUST
-            </button>
+    <nav class="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-sm z-50">
+        <div class="max-w-2xl mx-auto px-6 py-8 flex justify-between items-baseline">
+            <h1 class="text-sm font-light tracking-[0.2em] cursor-pointer" onclick="location.reload()">MOOD</h1>
+            <button id="loginBtn" onclick="toggleLogin()" class="text-[10px] tracking-widest text-gray-400 hover:text-black transition-colors">JUST</button>
         </div>
     </nav>
 
-    <main class="max-w-2xl mx-auto px-6 mt-10">
+    <main class="max-w-2xl mx-auto px-6 pt-32 pb-40">
         
-        <section id="writeSection" class="hidden mb-12 bg-white rounded-3xl p-6 border border-gray-100 dreamy-shadow">
-            <input type="text" id="postTitle" placeholder="제목을 입력하세요" class="w-full mb-4 text-lg font-bold outline-none placeholder:text-gray-300">
-            <textarea id="postContent" placeholder="오늘의 기록을 남겨보세요." class="w-full h-32 mb-4 resize-none outline-none text-gray-600 placeholder:text-gray-300"></textarea>
-            
-            <div class="flex items-center justify-between pt-4 border-t border-gray-50">
-                <div class="flex items-center gap-4">
-                    <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
-                        <input type="checkbox" id="postPinned" class="rounded border-gray-300 text-blue-500 focus:ring-0"> 📌 상단 고정
+        <section id="writeSection" class="hidden mb-20">
+            <div class="space-y-6">
+                <input type="text" id="postTitle" placeholder="제목" class="w-full text-xl font-light outline-none placeholder:text-gray-200">
+                <textarea id="postContent" placeholder="내용을 입력하세요." class="w-full h-40 resize-none outline-none text-sm leading-relaxed text-gray-500 placeholder:text-gray-200"></textarea>
+                
+                <div class="flex items-center justify-between pt-4">
+                    <label class="flex items-center gap-2 text-[10px] text-gray-300 cursor-pointer uppercase tracking-tighter">
+                        <input type="checkbox" id="postPinned" class="w-3 h-3 rounded-full border-gray-200 checked:bg-black appearance-none border transition-all"> 
+                        Pin to top
                     </label>
+                    <button onclick="addPost()" class="text-[10px] tracking-[0.2em] border border-black px-6 py-2 hover:bg-black hover:text-white transition-all">POST</button>
                 </div>
-                <button onclick="addPost()" class="bg-black text-white px-6 py-2 rounded-full text-xs font-bold hover:opacity-80 transition">POST</button>
             </div>
+            <div class="h-[1px] bg-gray-100 my-16"></div>
         </section>
 
-        <div id="feedList" class="space-y-10">
+        <div id="feedList" class="space-y-20">
+            <div class="text-center py-20 text-gray-300 text-xs tracking-widest font-light">
+                저장된 기록이 없습니다.
             </div>
+        </div>
     </main>
 
     <script>
         let isLoggedIn = false;
         let posts = [];
 
-        // 1. 로그인 토글
         function toggleLogin() {
             isLoggedIn = !isLoggedIn;
             const btn = document.getElementById('loginBtn');
             const section = document.getElementById('writeSection');
-            
-            if(isLoggedIn) {
-                btn.innerText = 'LOGOUT';
-                btn.classList.add('bg-black', 'text-white', 'border-black');
-                section.classList.remove('hidden');
-            } else {
-                btn.innerText = 'JUST';
-                btn.classList.remove('bg-black', 'text-white', 'border-black');
-                section.classList.add('hidden');
-            }
+            btn.innerText = isLoggedIn ? 'LOGOUT' : 'JUST';
+            btn.style.color = isLoggedIn ? 'black' : '';
+            section.classList.toggle('hidden');
         }
 
-        // 2. 게시글 추가
         function addPost() {
             const title = document.getElementById('postTitle');
             const content = document.getElementById('postContent');
             const pinned = document.getElementById('postPinned');
 
-            if(!title.value || !content.value) return alert("내용을 입력해주세요.");
+            if(!title.value || !content.value) return;
 
             const newPost = {
                 id: Date.now(),
                 title: title.value,
                 content: content.value,
                 pinned: pinned.checked,
-                date: new Date().toLocaleDateString(),
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
                 comments: []
             };
 
             posts = [newPost, ...posts].sort((a, b) => b.pinned - a.pinned);
-            
-            // 입력창 초기화
-            title.value = '';
-            content.value = '';
-            pinned.checked = false;
-            
+            title.value = ''; content.value = ''; pinned.checked = false;
             renderPosts();
         }
 
-        // 3. 댓글 추가
         function addComment(postId) {
-            const input = document.getElementById(`commentInput-${postId}`);
+            const input = document.getElementById(`cInput-${postId}`);
             if(!input.value.trim()) return;
 
             const post = posts.find(p => p.id === postId);
-            post.comments.push({
-                id: Date.now(),
-                text: input.value,
-                replies: []
-            });
+            post.comments.push({ id: Date.now(), text: input.value, replies: [] });
             renderPosts();
         }
 
-        // 4. 대댓글 추가
         function addReply(postId, commentId) {
-            const input = document.getElementById(`replyInput-${postId}-${commentId}`);
+            const input = document.getElementById(`rInput-${postId}-${commentId}`);
             if(!input.value.trim()) return;
 
             const post = posts.find(p => p.id === postId);
             const comment = post.comments.find(c => c.id === commentId);
-            comment.replies.push({
-                id: Date.now(),
-                text: input.value
-            });
+            comment.replies.push({ id: Date.now(), text: input.value });
             renderPosts();
         }
 
-        // 5. 대댓글 입력창 토글
-        function toggleReplyForm(id) {
-            const form = document.getElementById(id);
-            form.classList.toggle('hidden');
-        }
-
-        // 6. 게시글 렌더링
         function renderPosts() {
             const feed = document.getElementById('feedList');
-            feed.innerHTML = posts.map(post => `
-                <article class="post-card bg-white p-8 rounded-[2rem] border border-gray-50 dreamy-shadow relative">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-[10px] text-gray-400 tracking-widest uppercase">${post.date}</span>
-                        ${post.pinned ? `<span class="pinned-tag text-[10px] px-2 py-0.5 rounded-full font-bold">PINNED</span>` : ''}
-                    </div>
-                    <h2 class="text-xl font-bold mb-4 text-gray-800">${post.title}</h2>
-                    <p class="text-gray-600 leading-relaxed text-sm mb-8 whitespace-pre-wrap">${post.content}</p>
+            if(posts.length === 0) return;
 
-                    <div class="bg-gray-50/50 rounded-2xl p-6 mt-6">
-                        <div class="flex gap-2 mb-6">
-                            <input id="commentInput-${post.id}" type="text" placeholder="댓글을 입력하세요" 
-                                class="flex-1 bg-white border border-gray-100 rounded-full px-4 py-2 text-xs outline-none">
-                            <button onclick="addComment(${post.id})" class="bg-gray-800 text-white px-4 py-2 rounded-full text-[10px] font-bold">SEND</button>
+            feed.innerHTML = posts.map(post => `
+                <article class="group">
+                    <div class="flex items-baseline justify-between mb-6">
+                        <h2 class="text-lg font-normal tracking-tight text-gray-900">${post.title}</h2>
+                        <div class="flex items-center gap-3">
+                            ${post.pinned ? '<span class="text-[9px] tracking-tighter text-gray-300 italic">pinned</span>' : ''}
+                            <span class="text-[9px] tracking-widest text-gray-300 uppercase">${post.date}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-[13px] leading-[1.8] text-gray-500 font-light whitespace-pre-wrap mb-10">
+                        ${post.content}
+                    </p>
+
+                    <div class="mt-10 pt-6 border-t border-gray-50">
+                        <div class="flex items-center gap-3 mb-6">
+                            <input id="cInput-${post.id}" type="text" placeholder="Comment" 
+                                class="flex-1 text-[11px] font-light outline-none border-b border-transparent focus:border-gray-100 py-1 transition-all">
+                            <button onclick="addComment(${post.id})" class="text-[9px] tracking-widest text-gray-400 hover:text-black">SEND</button>
                         </div>
 
                         <div class="space-y-4">
                             ${post.comments.map(comment => `
-                                <div class="border-l-2 border-gray-200 pl-4 py-1">
-                                    <p class="text-xs text-gray-700">${comment.text}</p>
-                                    <button onclick="toggleReplyForm('replyForm-${post.id}-${comment.id}')" class="text-[9px] text-gray-400 mt-1 hover:text-gray-600">답글 달기</button>
+                                <div class="group/comment">
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-[11px] text-gray-400 font-light leading-relaxed">${comment.text}</p>
+                                        <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="text-[9px] text-gray-300 ml-2">reply</button>
+                                    </div>
                                     
-                                    <div class="mt-2 space-y-2">
-                                        ${comment.replies.map(reply => `
-                                            <div class="flex items-start gap-2 text-[11px] text-gray-500 bg-white/50 p-2 rounded-lg">
-                                                <span class="text-gray-300">↳</span>
-                                                <span>${reply.text}</span>
-                                            </div>
-                                        `).join('')}
+                                    <div class="hidden mt-2 flex items-center gap-2 pl-4">
+                                        <input id="rInput-${post.id}-${comment.id}" type="text" placeholder="Reply" 
+                                            class="flex-1 text-[10px] font-light outline-none border-b border-gray-50 py-1">
+                                        <button onclick="addReply(${post.id}, ${comment.id})" class="text-[9px] text-gray-400">SEND</button>
                                     </div>
 
-                                    <div id="replyForm-${post.id}-${comment.id}" class="hidden mt-3 flex gap-2">
-                                        <input id="replyInput-${post.id}-${comment.id}" type="text" placeholder="답글 내용" 
-                                            class="flex-1 bg-transparent border-b border-gray-200 text-[11px] outline-none py-1">
-                                        <button onclick="addReply(${post.id}, ${comment.id})" class="text-[10px] text-blue-500 font-bold">전송</button>
+                                    <div class="mt-2 space-y-2 pl-4 border-l border-gray-50">
+                                        ${comment.replies.map(reply => `
+                                            <p class="text-[10px] text-gray-300 font-light italic">↳ ${reply.text}</p>
+                                        `).join('')}
                                     </div>
                                 </div>
                             `).join('')}
