@@ -7,89 +7,120 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8f9fa; color: #333; }
+        
+        /* 모바일 사이즈 고정 스타일 */
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: #e2e8f0; /* 배경을 어둡게 해서 폰 화면을 강조 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .mobile-container {
+            width: 100%;
+            max-width: 420px; /* 아이폰 Pro Max 정도의 너비 */
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+
         .glass-modal { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .just-btn { background-color: #dbeafe; color: white; transition: all 0.2s; }
         .just-btn:hover { background-color: #bfdbfe; }
         .post-card { border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .add-btn { background-color: #dbeafe; box-shadow: 0 4px 15px rgba(219, 234, 254, 0.5); }
+        
+        /* 모달이 컨테이너 안에서만 뜨도록 설정 */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+        }
     </style>
 </head>
-<body class="bg-[#f8f9fa]">
+<body>
 
-    <nav class="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div class="max-w-xl mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight">MOOD</h1>
-            <button onclick="openLogin()" class="just-btn px-6 py-2 rounded-xl font-bold text-sm">JUST</button>
-        </div>
-    </nav>
-
-    <main class="max-w-xl mx-auto px-4 mt-8">
-        <div class="bg-white post-card p-6 min-h-[400px]">
-            <div class="flex justify-between items-center mb-6">
-                <span class="bg-gray-100 px-4 py-1.5 rounded-full text-xs text-gray-500 font-medium">게시글</span>
-                <select class="border-gray-200 border rounded-full px-4 py-1 text-xs outline-none bg-white">
-                    <option>전체</option>
-                </select>
+    <div class="mobile-container">
+        <nav class="bg-white border-b border-gray-100 sticky top-0 z-40">
+            <div class="px-6 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold tracking-tight">MOOD</h1>
+                <button onclick="openLogin()" class="just-btn px-6 py-2 rounded-xl font-bold text-sm">JUST</button>
             </div>
+        </nav>
 
-            <div id="feed" class="divide-y divide-gray-50">
-                <div id="emptyMsg" class="py-20 text-center text-gray-300 text-sm">
-                    아직 작성된 게시글이 없습니다.
+        <main class="px-4 mt-8 pb-20">
+            <div class="bg-white post-card p-6 min-h-[400px]">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="bg-gray-100 px-4 py-1.5 rounded-full text-xs text-gray-500 font-medium">게시글</span>
+                    <select class="border-gray-200 border rounded-full px-4 py-1 text-xs outline-none bg-white">
+                        <option>전체</option>
+                    </select>
+                </div>
+
+                <div id="feed" class="divide-y divide-gray-50">
+                    <div id="emptyMsg" class="py-20 text-center text-gray-300 text-sm">
+                        아직 작성된 게시글이 없습니다.
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <button id="addBtn" onclick="openWrite()" class="hidden absolute bottom-8 right-8 w-14 h-14 add-btn rounded-full text-white text-3xl flex items-center justify-center z-50 hover:scale-110 transition-transform">
+            +
+        </button>
+
+        <div id="loginModal" class="hidden modal-overlay px-4">
+            <div class="bg-white w-full rounded-[30px] p-8 relative">
+                <button onclick="closeModal('loginModal')" class="absolute top-6 right-6 text-gray-400">X</button>
+                <h2 class="text-lg font-bold mb-8">JUST</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 block mb-2 uppercase">Say</label>
+                        <input id="userId" type="text" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 block mb-2 uppercase">Like</label>
+                        <input id="userPw" type="password" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button onclick="closeModal('loginModal')" class="px-6 py-2 text-xs font-bold text-gray-400">STOP</button>
+                        <button onclick="handleLogin()" class="just-btn px-6 py-2 text-xs font-bold rounded-xl">GO</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </main>
 
-    <button id="addBtn" onclick="openWrite()" class="hidden fixed bottom-8 right-8 w-14 h-14 add-btn rounded-full text-white text-3xl flex items-center justify-center z-50 hover:scale-110 transition-transform">
-        +
-    </button>
-
-    <div id="loginModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/20 px-4">
-        <div class="bg-white w-full max-w-sm rounded-[30px] p-8 relative">
-            <button onclick="closeModal('loginModal')" class="absolute top-6 right-6 text-gray-400">X</button>
-            <h2 class="text-lg font-bold mb-8">JUST</h2>
-            <div class="space-y-6">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 block mb-2 uppercase">Say</label>
-                    <input id="userId" type="text" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none focus:border-blue-100">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 block mb-2 uppercase">Like</label>
-                    <input id="userPw" type="password" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none focus:border-blue-100">
-                </div>
-                <div class="flex justify-end gap-3 pt-4">
-                    <button onclick="closeModal('loginModal')" class="px-6 py-2 text-xs font-bold text-gray-400">STOP</button>
-                    <button onclick="handleLogin()" class="just-btn px-6 py-2 text-xs font-bold rounded-xl">GO</button>
+        <div id="writeModal" class="hidden modal-overlay px-4">
+            <div class="bg-white w-full rounded-[30px] p-8">
+                <h2 class="text-lg font-bold mb-4">새로운 기록</h2>
+                <input id="postTitle" type="text" placeholder="제목" class="w-full mb-4 border-b border-gray-100 py-2 outline-none">
+                <textarea id="postContent" placeholder="내용을 입력하세요." class="w-full h-40 resize-none outline-none text-sm"></textarea>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeModal('writeModal')" class="px-4 py-2 text-xs">취소</button>
+                    <button onclick="savePost()" class="just-btn px-6 py-2 rounded-xl text-xs font-bold">등록</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="writeModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/20 px-4">
-        <div class="bg-white w-full max-w-md rounded-[30px] p-8">
-            <h2 class="text-lg font-bold mb-4">새로운 기록</h2>
-            <input id="postTitle" type="text" placeholder="제목" class="w-full mb-4 border-b border-gray-100 py-2 outline-none">
-            <textarea id="postContent" placeholder="내용을 입력하세요." class="w-full h-40 resize-none outline-none text-sm"></textarea>
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal('writeModal')" class="px-4 py-2 text-xs">취소</button>
-                <button onclick="savePost()" class="just-btn px-6 py-2 rounded-xl text-xs font-bold">등록</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="detailModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/20 px-4">
-        <div class="bg-white w-full max-w-lg rounded-[30px] p-8 max-h-[85vh] overflow-y-auto relative">
-            <button onclick="closeModal('detailModal')" class="absolute top-6 right-6 text-gray-400">X</button>
-            <div id="postDetailContent"></div>
-            
-            <div class="mt-8 pt-6 border-t border-gray-100">
-                <h3 class="text-sm font-bold mb-4">댓글</h3>
-                <div id="commentList" class="space-y-4 mb-6"></div>
-                
-                <div class="flex gap-2 sticky bottom-0 bg-white pt-2">
-                    <input id="commentInput" type="text" placeholder="댓글을 입력하세요" class="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-xs outline-none">
-                    <button onclick="addComment()" class="bg-white border border-gray-100 px-4 py-2 rounded-xl text-xs font-bold">등록</button>
+        <div id="detailModal" class="hidden modal-overlay px-4">
+            <div class="bg-white w-full rounded-[30px] p-8 max-h-[85vh] overflow-y-auto relative">
+                <button onclick="closeModal('detailModal')" class="absolute top-6 right-6 text-gray-400">X</button>
+                <div id="postDetailContent"></div>
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <h3 class="text-sm font-bold mb-4">댓글</h3>
+                    <div id="commentList" class="space-y-4 mb-6"></div>
+                    <div class="flex gap-2 sticky bottom-0 bg-white pt-2">
+                        <input id="commentInput" type="text" placeholder="댓글을 입력하세요" class="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-xs outline-none">
+                        <button onclick="addComment()" class="bg-white border border-gray-100 px-4 py-2 rounded-xl text-xs font-bold">등록</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -100,32 +131,21 @@
         let posts = [];
         let currentPostId = null;
 
-        // 모달 제어
         function openLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
         function openWrite() { document.getElementById('writeModal').classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-        // 로그인 처리
         function handleLogin() {
             isLoggedIn = true;
             document.getElementById('addBtn').classList.remove('hidden');
             closeModal('loginModal');
-            alert('로그인되었습니다.');
         }
 
-        // 글 저장
         function savePost() {
             const title = document.getElementById('postTitle').value;
             const content = document.getElementById('postContent').value;
             if(!title || !content) return;
-
-            const post = {
-                id: Date.now(),
-                title,
-                content,
-                date: new Date().toLocaleString(),
-                comments: []
-            };
+            const post = { id: Date.now(), title, content, date: new Date().toLocaleString(), comments: [] };
             posts.push(post);
             renderFeed();
             closeModal('writeModal');
@@ -133,12 +153,10 @@
             document.getElementById('postContent').value = '';
         }
 
-        // 피드 렌더링
         function renderFeed() {
             const feed = document.getElementById('feed');
             const empty = document.getElementById('emptyMsg');
             if(posts.length > 0) empty.classList.add('hidden');
-            
             feed.innerHTML = posts.map(post => `
                 <div onclick="openDetail(${post.id})" class="py-6 cursor-pointer hover:bg-gray-50 transition flex justify-between items-center px-2">
                     <h3 class="font-bold text-gray-800">${post.title}</h3>
@@ -147,7 +165,6 @@
             `).join('');
         }
 
-        // 상세 보기
         function openDetail(id) {
             currentPostId = id;
             const post = posts.find(p => p.id === id);
@@ -160,7 +177,6 @@
             document.getElementById('detailModal').classList.remove('hidden');
         }
 
-        // 댓글 렌더링 (대댓글 포함)
         function renderComments() {
             const post = posts.find(p => p.id === currentPostId);
             const list = document.getElementById('commentList');
@@ -196,7 +212,6 @@
             if(!input.value) return;
             const post = posts.find(p => p.id === currentPostId);
             const comment = post.comments.find(c => c.id === commentId);
-            if(!comment.replies) comment.replies = [];
             comment.replies.push(input.value);
             input.value = '';
             renderComments();
