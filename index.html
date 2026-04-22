@@ -34,7 +34,7 @@
         <nav class="bg-white border-b border-gray-100 sticky top-0 z-40">
             <div class="px-6 py-4 flex justify-between items-center">
                 <h1 class="text-xl font-bold tracking-tight">MOOD</h1>
-                <button onclick="openLogin()" class="just-btn px-6 py-2 rounded-xl font-bold text-sm">JUST</button>
+                <button id="mainLoginBtn" onclick="openLogin()" class="just-btn px-6 py-2 rounded-xl font-bold text-sm uppercase italic">Just</button>
             </div>
         </nav>
 
@@ -71,7 +71,7 @@
 
         <div id="writeModal" class="hidden modal-overlay px-4">
             <div class="bg-white w-full rounded-[30px] p-8 max-h-[90vh] overflow-y-auto">
-                <h2 class="text-lg font-bold mb-4 italic">New Post</h2>
+                <h2 id="writeModalTitle" class="text-lg font-bold mb-4 italic">New Post</h2>
                 <input id="postTitle" type="text" placeholder="제목" class="w-full mb-4 border-b border-gray-100 py-2 outline-none font-bold">
                 <textarea id="postContent" placeholder="내용을 입력하세요." class="w-full h-32 resize-none outline-none text-sm mb-4"></textarea>
                 
@@ -80,8 +80,9 @@
                         <label class="text-xs text-gray-500 font-medium">📷 사진 업로드</label>
                         <input type="file" id="postImage" accept="image/*" onchange="previewImage(this)" class="text-[10px] w-2/3">
                     </div>
-                    <div id="imagePreviewContainer" class="hidden rounded-xl overflow-hidden border border-gray-100">
+                    <div id="imagePreviewContainer" class="hidden rounded-xl overflow-hidden border border-gray-100 relative">
                         <img id="imgPreview" src="#" class="w-full h-auto">
+                        <button onclick="removeImgPreview()" class="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 text-xs">X</button>
                     </div>
                     <label class="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
                         <input type="checkbox" id="postPinned" class="rounded border-gray-300 text-blue-200"> 📌 이 게시물 상단에 고정
@@ -89,8 +90,8 @@
                 </div>
 
                 <div class="flex justify-end gap-2 border-t pt-4">
-                    <button onclick="closeModal('writeModal')" class="px-4 py-2 text-xs font-bold text-gray-400 uppercase">Cancel</button>
-                    <button onclick="savePost()" class="just-btn px-6 py-2 rounded-xl text-xs font-bold uppercase italic">Post</button>
+                    <button onclick="closeWriteModal()" class="px-4 py-2 text-xs font-bold text-gray-400 uppercase">Cancel</button>
+                    <button id="postSubmitBtn" onclick="savePost()" class="just-btn px-6 py-2 rounded-xl text-xs font-bold uppercase italic">Post</button>
                 </div>
             </div>
         </div>
@@ -98,7 +99,14 @@
         <div id="detailModal" class="hidden modal-overlay px-4">
             <div class="bg-white w-full rounded-[30px] p-8 max-h-[85vh] overflow-y-auto relative">
                 <button onclick="closeModal('detailModal')" class="absolute top-6 right-6 text-gray-400 font-bold">X</button>
+                
                 <div id="postDetailContent"></div>
+                
+                <div id="adminActions" class="hidden flex gap-4 mt-6 pt-4 border-t border-gray-50">
+                    <button onclick="editPost()" class="text-xs font-bold text-gray-400 hover:text-blue-400 transition italic uppercase">Edit</button>
+                    <button onclick="deletePost()" class="text-xs font-bold text-gray-400 hover:text-red-400 transition italic uppercase">Delete</button>
+                </div>
+
                 <div class="mt-8 pt-6 border-t border-gray-100">
                     <h3 class="text-sm font-bold mb-4 italic">Comments</h3>
                     <div id="commentList" class="space-y-4 mb-6 font-bold"></div>
@@ -116,17 +124,38 @@
         let posts = [];
         let currentPostId = null;
         let tempImgData = null;
+        let isEditing = false;
 
         function openLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
-        function openWrite() { document.getElementById('writeModal').classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function openWrite() {
+            isEditing = false;
+            document.getElementById('writeModalTitle').innerText = "New Post";
+            document.getElementById('postSubmitBtn').innerText = "Post";
+            document.getElementById('writeModal').classList.remove('hidden');
+        }
+
+        function closeWriteModal() {
+            document.getElementById('writeModal').classList.add('hidden');
+            resetWriteForm();
+        }
+
+        function resetWriteForm() {
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
+            document.getElementById('postPinned').checked = false;
+            document.getElementById('postImage').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+            tempImgData = null;
+        }
 
         function previewImage(input) {
             const container = document.getElementById('imagePreviewContainer');
             const preview = document.getElementById('imgPreview');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = (e) => {
                     preview.src = e.target.result;
                     tempImgData = e.target.result;
                     container.classList.remove('hidden');
@@ -135,9 +164,16 @@
             }
         }
 
+        function removeImgPreview() {
+            document.getElementById('postImage').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+            tempImgData = null;
+        }
+
         function handleLogin() {
             isLoggedIn = true;
             document.getElementById('addBtn').classList.remove('hidden');
+            document.getElementById('mainLoginBtn').innerText = "Logout";
             closeModal('loginModal');
         }
 
@@ -147,35 +183,34 @@
             const pinned = document.getElementById('postPinned').checked;
             if(!title || !content) return;
 
-            const post = { 
-                id: Date.now(), title, content, pinned,
-                image: tempImgData,
-                date: new Date().toLocaleString(), comments: [] 
-            };
+            if (isEditing) {
+                const index = posts.findIndex(p => p.id === currentPostId);
+                posts[index] = { ...posts[index], title, content, pinned, image: tempImgData };
+            } else {
+                const post = { 
+                    id: Date.now(), title, content, pinned, image: tempImgData,
+                    date: new Date().toLocaleString(), comments: [] 
+                };
+                posts.push(post);
+            }
             
-            posts.push(post);
-            posts.sort((a, b) => b.pinned - a.pinned || b.id - a.id); // 고정된 글 우선 정렬
-            
+            posts.sort((a, b) => b.pinned - a.pinned || b.id - a.id);
             renderFeed();
-            closeModal('writeModal');
-            // 초기화
-            document.getElementById('postTitle').value = '';
-            document.getElementById('postContent').value = '';
-            document.getElementById('postPinned').checked = false;
-            document.getElementById('postImage').value = '';
-            document.getElementById('imagePreviewContainer').classList.add('hidden');
-            tempImgData = null;
+            closeWriteModal();
+            if (isEditing) closeModal('detailModal');
         }
 
         function renderFeed() {
             const feed = document.getElementById('feed');
             const empty = document.getElementById('emptyMsg');
             if(posts.length > 0) empty.classList.add('hidden');
+            else empty.classList.remove('hidden');
+
             feed.innerHTML = posts.map(post => `
                 <div onclick="openDetail(${post.id})" class="py-6 cursor-pointer hover:bg-gray-50 transition flex justify-between items-center px-2">
                     <div class="flex items-center gap-2">
                         ${post.pinned ? '<span class="text-orange-400 text-xs">📌</span>' : ''}
-                        <h3 class="font-bold text-gray-800">${post.title}</h3>
+                        <h3 class="font-bold text-gray-800 text-sm">${post.title}</h3>
                     </div>
                     <span class="text-[10px] text-gray-300">MOOD ✔</span>
                 </div>
@@ -190,10 +225,43 @@
                 <h2 class="text-xl font-bold mb-2">${post.title}</h2>
                 <p class="text-[10px] text-gray-400 mb-4">Admin · ${post.date}</p>
                 ${post.image ? `<img src="${post.image}" class="w-full rounded-2xl mb-4">` : ''}
-                <p class="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap">${post.content}</p>
+                <p class="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap font-normal">${post.content}</p>
             `;
+            
+            // 관리자 버튼 노출 여부
+            const adminActions = document.getElementById('adminActions');
+            if (isLoggedIn) adminActions.classList.remove('hidden');
+            else adminActions.classList.add('hidden');
+
             renderComments();
             document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function editPost() {
+            isEditing = true;
+            const post = posts.find(p => p.id === currentPostId);
+            
+            document.getElementById('writeModalTitle').innerText = "Edit Post";
+            document.getElementById('postSubmitBtn').innerText = "Update";
+            document.getElementById('postTitle').value = post.title;
+            document.getElementById('postContent').value = post.content;
+            document.getElementById('postPinned').checked = post.pinned;
+            
+            if (post.image) {
+                tempImgData = post.image;
+                document.getElementById('imgPreview').src = post.image;
+                document.getElementById('imagePreviewContainer').classList.remove('hidden');
+            }
+            
+            document.getElementById('writeModal').classList.remove('hidden');
+        }
+
+        function deletePost() {
+            if (confirm("정말 이 게시물을 삭제하시겠습니까?")) {
+                posts = posts.filter(p => p.id !== currentPostId);
+                renderFeed();
+                closeModal('detailModal');
+            }
         }
 
         function renderComments() {
@@ -213,7 +281,7 @@
                             <button onclick="addReply(${c.id}, this.previousElementSibling)" class="text-[9px] font-bold italic">전송</button>
                         </div>
                     </div>
-                    ${c.replies ? c.replies.map(r => `<p class="ml-4 mt-2 text-[10px] text-gray-400 font-normal">↳ ${r}</p>`).join('') : ''}
+                    ${c.replies ? c.replies.map(r => `<p class="ml-4 mt-2 text-[10px] text-gray-400 font-normal italic">↳ ${r}</p>`).join('') : ''}
                 </div>
             `).join('');
         }
