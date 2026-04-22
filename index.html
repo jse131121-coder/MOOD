@@ -9,19 +9,17 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
 
-        /* S24 최적화 및 기본 셋팅 */
         html, body {
             position: fixed; overflow: hidden; width: 100%; height: 100%;
             font-family: 'Pretendard', sans-serif; margin: 0; padding: 0;
-            background-color: #000; /* 외부 배경 블랙 */
+            background-color: #000;
         }
 
-        /* 오로라 마블링 배경 (연보라, 연하늘, 연파랑) */
-        .aurora-container {
+        .aurora-bg {
             position: absolute; inset: 0; z-index: -1;
             background: linear-gradient(125deg, #E0F2FE 0%, #EBE9FE 40%, #F5F3FF 70%, #DBEAFE 100%);
             background-size: 300% 300%;
-            animation: auroraMove 10s ease infinite;
+            animation: auroraMove 15s ease infinite;
         }
         @keyframes auroraMove {
             0% { background-position: 0% 50%; }
@@ -29,160 +27,200 @@
             100% { background-position: 0% 50%; }
         }
 
-        #app {
-            height: 100dvh; width: 100%; max-width: 450px;
-            display: flex; flex-direction: column; margin: 0 auto;
-            position: relative; background: transparent;
-        }
-
-        /* 스크롤바 숨기기 */
+        #app { height: 100dvh; width: 100%; max-width: 450px; display: flex; flex-direction: column; margin: 0 auto; position: relative; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         
-        /* 다크 카드 스타일 (이미지 기반) */
-        .dark-card {
-            background: rgba(26, 27, 30, 0.95);
-            border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .dark-card { background: rgba(26, 27, 30, 0.95); border-radius: 28px; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
+        .dark-card:active { transform: scale(0.98); }
 
-        /* 하단 메뉴 그리드 (이미지 고증) */
+        /* 홈 화면 메뉴 스타일 (이미지 고증) */
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .home-btn {
+            background: white; border-radius: 30px; aspect-ratio: 1/1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.3s;
+        }
+        .home-btn:active { transform: scale(0.9); }
+        .home-btn i { color: #1E0A40; width: 40px; height: 40px; margin-bottom: 8px; }
+        .home-btn span { font-size: 14px; font-weight: 900; color: #1E0A40; text-transform: uppercase; letter-spacing: -0.5px; }
+
+        /* 하단 내비게이션 바 (홈 제외 다른 화면에서만 표시) */
         .bottom-nav {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(15px);
-            border-radius: 40px 40px 0 0;
-            padding: 20px 15px calc(20px + env(safe-area-inset-bottom));
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px);
+            border-radius: 35px 35px 0 0; padding: 15px 10px calc(15px + env(safe-area-inset-bottom));
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
         }
-
-        .nav-btn {
-            background: white; border-radius: 18px;
-            padding: 12px 0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            transition: 0.2s;
+        .nav-tab {
+            background: white; border-radius: 15px; padding: 10px 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
-        .nav-btn:active { transform: scale(0.92); }
-        .nav-btn i { color: #1E0A40; width: 22px; height: 22px; margin-bottom: 4px; }
-        .nav-btn span { font-size: 10px; font-weight: 800; color: #1E0A40; text-transform: uppercase; }
-
-        /* 프로필 원형 아바타 */
-        .avatar {
-            width: 55px; height: 55px; border-radius: 50%;
-            background: white; display: flex; align-items: center;
-            justify-content: center; font-weight: 900; color: #1E0A40;
-            border: 2px solid rgba(255,255,255,0.1); shrink-0;
-        }
+        .nav-tab span { font-size: 9px; font-weight: 800; margin-top: 3px; color: #1E0A40; }
     </style>
 </head>
 <body>
 
-    <div class="aurora-container"></div>
+    <div class="aurora-bg"></div>
 
     <div id="app">
-        <header class="flex items-center justify-between p-6 shrink-0">
-            <div class="bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full text-[#2ECC71] text-xs font-black flex items-center gap-2 shadow-sm">
-                <span class="w-2 h-2 bg-[#2ECC71] rounded-full animate-pulse"></span> 포이드
+        <header class="flex items-center justify-between p-6 shrink-0 z-50">
+            <div id="status-pill" class="bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full text-[#2ECC71] text-xs font-black flex items-center gap-2 shadow-sm">
+                <span class="w-2 h-2 bg-[#2ECC71] rounded-full animate-pulse"></span> <span id="user-status">포이드</span>
             </div>
-            <div class="text-[#1E0A40] font-black tracking-tighter text-xl italic">LOYDING</div>
+            <div onclick="goHome()" class="text-[#1E0A40] font-[900] tracking-tighter text-2xl italic cursor-pointer">LOYDING</div>
         </header>
 
-        <main id="main-view" class="flex-1 overflow-y-auto hide-scroll px-5 py-2"></main>
+        <main id="main-view" class="flex-1 overflow-y-auto hide-scroll px-5"></main>
 
-        <nav class="bottom-nav shrink-0 shadow-2xl">
-            <button onclick="renderView('call')" class="nav-btn"><i data-lucide="phone"></i><span>Call</span></button>
-            <button onclick="renderView('message')" class="nav-btn"><i data-lucide="mail"></i><span>Message</span></button>
-            <button onclick="renderView('feed')" class="nav-btn"><i data-lucide="layout-grid"></i><span>Feed</span></button>
-            <button onclick="renderView('calendar')" class="nav-btn"><i data-lucide="calendar"></i><span>Calendar</span></button>
-            <button onclick="renderView('rory')" class="nav-btn"><i data-lucide="smile"></i><span>Rory</span></button>
-            <button onclick="renderView('letter')" class="nav-btn"><i data-lucide="pen-tool"></i><span>Letter</span></button>
-            <button onclick="renderView('settings')" class="nav-btn"><i data-lucide="settings"></i><span>Settings</span></button>
-            <button onclick="location.reload()" class="nav-btn"><i data-lucide="refresh-cw"></i><span>Refresh</span></button>
-        </nav>
+        <footer id="footer-nav" class="hidden">
+            <nav class="bottom-nav">
+                <button onclick="goHome()" class="nav-tab"><i data-lucide="home" class="w-5 text-[#1E0A40]"></i><span>HOME</span></button>
+                <button onclick="renderView('message')" class="nav-tab"><i data-lucide="mail" class="w-5 text-[#1E0A40]"></i><span>CHAT</span></button>
+                <button onclick="renderView('feed')" class="nav-tab"><i data-lucide="layout-grid" class="w-5 text-[#1E0A40]"></i><span>FEED</span></button>
+                <button onclick="renderView('settings')" class="nav-tab"><i data-lucide="settings" class="w-5 text-[#1E0A40]"></i><span>SET</span></button>
+            </nav>
+        </footer>
     </div>
 
     <script>
         const mainView = document.getElementById('main-view');
+        const footer = document.getElementById('footer-nav');
 
-        const content = {
-            // 1. 메시지 리스트 (이미지 고증)
-            message: `
-                <div class="flex items-center justify-between mb-4 mt-2">
-                    <h2 class="text-[#1E0A40] text-3xl font-black italic">메시지</h2>
-                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm"><i data-lucide="more-horizontal" class="w-4"></i></div>
+        // 상태 관리
+        let state = {
+            isLoggedIn: true,
+            userName: "포이드",
+            currentTheme: "light"
+        };
+
+        const views = {
+            // [HOME] 앱 선택 화면 (첫 화면)
+            home: `
+                <div class="menu-grid animate-in fade-in zoom-in duration-300">
+                    <button onclick="renderView('call')" class="home-btn"><i data-lucide="phone"></i><span>Call</span></button>
+                    <button onclick="renderView('message')" class="home-btn"><i data-lucide="mail"></i><span>Message</span></button>
+                    <button onclick="renderView('feed')" class="home-btn"><i data-lucide="layout-grid"></i><span>Feed</span></button>
+                    <button onclick="renderView('calendar')" class="home-btn"><i data-lucide="calendar"></i><span>Calendar</span></button>
+                    <button onclick="renderView('rory')" class="home-btn"><i data-lucide="smile"></i><span>Rory</span></button>
+                    <button onclick="renderView('letter')" class="home-btn"><i data-lucide="pen-tool"></i><span>Letter</span></button>
+                    <button onclick="renderView('settings')" class="home-btn"><i data-lucide="settings"></i><span>Settings</span></button>
+                    <button onclick="location.reload()" class="home-btn"><i data-lucide="refresh-cw"></i><span>Refresh</span></button>
                 </div>
-                <div class="space-y-3">
-                    ${['LOYD', '서리닝', 'HARING', '로망망 🐾', 'DANANG', 'LUCA'].map((name, i) => `
-                        <div class="dark-card p-5 flex items-center gap-4 active:scale-95 transition-all cursor-pointer">
-                            <div class="avatar">${name[0]}</div>
-                            <div class="flex-1">
-                                <h3 class="text-white font-black text-lg">${name}</h3>
-                                <p class="text-gray-400 text-sm font-medium">새로운 메시지가 도착했습니다.</p>
+            `,
+            // [MESSAGE] 채팅 목록
+            message: `
+                <h2 class="text-[#1E0A40] text-3xl font-black italic mb-6 mt-4">Message</h2>
+                <div class="space-y-3 pb-10">
+                    ${['LOYD', '서리닝', 'HARING', '로망망 🐾', 'DANANG'].map(name => `
+                        <div class="dark-card p-5 flex items-center gap-4">
+                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center font-black text-[#1E0A40] text-xl">${name[0]}</div>
+                            <div class="flex-1 text-white">
+                                <div class="flex justify-between items-center"><span class="font-black text-lg">${name}</span><span class="text-[10px] text-gray-500 uppercase">12:30 PM</span></div>
+                                <p class="text-gray-400 text-sm truncate">메시지가 도착했습니다.</p>
                             </div>
                         </div>
                     `).join('')}
                 </div>
             `,
-            // 2. 피드 (인스타 감성)
-            feed: `
-                <div class="text-[#1E0A40] text-3xl font-black italic mb-6">피드</div>
-                <div class="space-y-6 pb-10">
-                    <div class="dark-card overflow-hidden">
-                        <div class="p-4 flex items-center gap-3">
-                            <div class="w-8 h-8 bg-white rounded-full"></div>
-                            <span class="text-white font-bold">LOYDING_OFFICIAL</span>
-                        </div>
-                        <div class="aspect-square bg-gradient-to-br from-purple-400 to-blue-400"></div>
-                        <div class="p-4 text-white">
-                            <p class="text-sm"><span class="font-bold">LOYDING</span> 오늘 날씨가 너무 좋네요! 다들 뭐하시나요? 🌈</p>
-                            <div class="mt-4 flex gap-4 text-gray-400"><i data-lucide="heart"></i><i data-lucide="message-circle"></i></div>
-                        </div>
+            // [CALENDAR] 4월 달력
+            calendar: `
+                <div class="dark-card p-6 text-white h-fit mt-4">
+                    <div class="flex justify-between items-center mb-6"><h3 class="font-black text-xl">APRIL 2026</h3><i data-lucide="chevron-right"></i></div>
+                    <div class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-gray-500 mb-4">
+                        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2 text-center font-bold">
+                        ${Array.from({length: 30}, (_, i) => `<div class="py-2 ${i+1 === 22 ? 'bg-purple-600 rounded-lg' : ''}">${i+1}</div>`).join('')}
                     </div>
                 </div>
             `,
-            // 3. 콜 (라이브 화면)
-            call: `
-                <div class="dark-card h-full flex flex-col p-6 text-white overflow-hidden">
-                    <div class="flex items-center justify-between mb-8">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-pink-200 rounded-full"></div>
-                            <div><h3 class="font-black text-lg">하리의 라이브 🎂</h3><p class="text-xs text-gray-400">LIVE · 01:24:30</p></div>
-                        </div>
-                        <button class="bg-white text-black px-4 py-1.5 rounded-lg text-xs font-black italic">EXIT</button>
+            // [RORY] 팬 라운지
+            rory: `
+                <h2 class="text-[#1E0A40] text-3xl font-black italic mb-6 mt-4">Rory Lounge</h2>
+                <div class="space-y-4">
+                    <div class="dark-card p-6 text-white">
+                        <span class="text-purple-400 font-black text-xs uppercase">Notice</span>
+                        <p class="font-bold mt-1">LOYDING 공식 팬덤 명칭 공모 안내</p>
                     </div>
-                    <div class="flex-1 flex items-center justify-center">
-                        <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center animate-ping"><i data-lucide="mic" class="w-10 h-10"></i></div>
-                    </div>
-                    <div class="p-4 bg-white/5 rounded-2xl">
-                        <p class="text-sm font-bold text-pink-300">HARING: 다들 들어와줘서 고마워!! ❤️</p>
+                    <div class="dark-card p-6 text-white">
+                        <div class="flex items-center gap-2 mb-2"><div class="w-6 h-6 bg-gray-600 rounded-full"></div><span class="text-xs font-bold">User_99</span></div>
+                        <p class="text-sm">오늘 라이브 너무 재밌었어요!! 다들 굿밤 🌙</p>
                     </div>
                 </div>
             `,
-            // 4. 설정
+            // [SETTINGS] 설정창 (기능 작동)
             settings: `
-                <div class="text-[#1E0A40] text-3xl font-black italic mb-6">설정</div>
+                <h2 class="text-[#1E0A40] text-3xl font-black italic mb-6 mt-4">Settings</h2>
                 <div class="space-y-3">
-                    <div class="dark-card p-6 flex justify-between items-center text-white font-bold"><span>프로필 수정</span><i data-lucide="chevron-right"></i></div>
-                    <div class="dark-card p-6 flex justify-between items-center text-white font-bold"><span>알림 설정</span><i data-lucide="chevron-right"></i></div>
-                    <div class="dark-card p-6 flex justify-between items-center text-white font-bold"><span>다크 모드</span><div class="w-12 h-6 bg-purple-600 rounded-full relative"><div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div></div></div>
-                    <div class="dark-card p-6 text-red-400 font-bold">로그아웃</div>
+                    <div class="dark-card p-6 flex justify-between items-center text-white font-bold">
+                        <span>사용자 이름</span>
+                        <span class="text-purple-400" onclick="editName()">${state.userName} ></span>
+                    </div>
+                    <div class="dark-card p-6 flex justify-between items-center text-white font-bold">
+                        <span>다크 모드 전용</span>
+                        <div class="w-10 h-5 bg-purple-600 rounded-full relative"><div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div></div>
+                    </div>
+                    <div class="dark-card p-6 flex justify-between items-center text-red-400 font-black cursor-pointer" onclick="handleLogout()">
+                        <span>LOGOUT</span>
+                        <i data-lucide="log-out" class="w-5"></i>
+                    </div>
+                </div>
+            `,
+            // [LOGIN] 로그아웃 후 보여질 화면
+            login: `
+                <div class="h-full flex flex-col items-center justify-center animate-in fade-in duration-500">
+                    <div class="dark-card p-10 w-full text-center">
+                        <h1 class="text-4xl font-[900] text-white italic mb-10">SIGN IN</h1>
+                        <input type="text" placeholder="ID" class="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-white font-bold mb-4 outline-none">
+                        <button onclick="handleLogin()" class="w-full bg-white text-[#1E0A40] py-4 rounded-2xl font-black text-lg">ENTER</button>
+                    </div>
                 </div>
             `
         };
 
-        function renderView(viewName) {
+        function renderView(name) {
+            // 홈 화면에서는 하단바 숨김, 그 외 화면은 노출
+            footer.style.display = (name === 'home' || name === 'login') ? 'none' : 'block';
+            
             mainView.style.opacity = '0';
             setTimeout(() => {
-                mainView.innerHTML = content[viewName] || `<div class="h-full flex items-center justify-center font-black italic text-[#1E0A40] uppercase">${viewName} 준비 중...</div>`;
+                mainView.innerHTML = views[name] || `<div class="text-white mt-10">Coming Soon...</div>`;
                 mainView.style.opacity = '1';
                 lucide.createIcons();
-            }, 150);
+            }, 100);
         }
 
-        // 초기 화면
-        renderView('message');
-        lucide.createIcons();
+        function goHome() {
+            if(!state.isLoggedIn) return renderView('login');
+            renderView('home');
+        }
+
+        function editName() {
+            const newName = prompt("변경할 이름을 입력하세요", state.userName);
+            if(newName) {
+                state.userName = newName;
+                document.getElementById('user-status').innerText = newName;
+                renderView('settings');
+            }
+        }
+
+        function handleLogout() {
+            if(confirm("정말 로그아웃 하시겠습니까?")) {
+                state.isLoggedIn = false;
+                renderView('login');
+                document.getElementById('status-pill').style.display = 'none';
+            }
+        }
+
+        function handleLogin() {
+    
+            state.isLoggedIn = true;
+            document.getElementById('status-pill').style.display = 'flex';
+            renderView('home');
+        }
+
+        // 앱 시작
+        goHome();
     </script>
 </body>
 </html>
