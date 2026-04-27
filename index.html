@@ -42,28 +42,24 @@
             <div class="bg-white post-card p-6 min-h-[400px]">
                 <div class="flex justify-between items-center mb-6">
                     <span class="bg-gray-100 px-4 py-1.5 rounded-full text-xs text-gray-500 font-bold">게시글</span>
-                    <select class="border-gray-200 border rounded-full px-4 py-1 text-xs outline-none bg-white font-bold">
-                        <option>전체</option>
-                    </select>
                 </div>
                 <div id="feed" class="divide-y divide-gray-50">
-                    <div id="emptyMsg" class="py-20 text-center text-gray-300 text-sm">아직 작성된 게시글이 없습니다.</div>
-                </div>
+                    </div>
+                <div id="emptyMsg" class="py-20 text-center text-gray-300 text-sm hidden">아직 작성된 게시글이 없습니다.</div>
             </div>
         </main>
 
-        <button id="addBtn" onclick="openWrite()" class="hidden absolute bottom-8 right-8 w-14 h-14 add-btn rounded-full text-white text-3xl flex items-center justify-center z-50 hover:scale-110 transition-transform">+</button>
+        <button id="addBtn" onclick="openWrite()" class="hidden absolute bottom-8 right-8 w-14 h-14 add-btn rounded-full text-white text-3xl flex items-center justify-center z-50">+</button>
 
         <div id="loginModal" class="hidden modal-overlay px-4">
             <div class="bg-white w-full rounded-[30px] p-8 relative">
                 <button onclick="closeModal('loginModal')" class="absolute top-6 right-6 text-gray-400 font-bold">X</button>
-                <h2 class="text-lg font-bold mb-8 italic">JUST</h2>
+                <h2 class="text-lg font-bold mb-8 italic font-bold text-blue-300">JUST LOGIN</h2>
                 <div class="space-y-6">
                     <input id="userId" type="text" placeholder="SAY (ID)" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none font-bold">
                     <input id="userPw" type="password" placeholder="LIKE" class="w-full border border-gray-100 rounded-xl px-4 py-3 outline-none">
                     <div class="flex justify-end gap-3 pt-4">
-                        <button onclick="closeModal('loginModal')" class="px-6 py-2 text-xs font-bold text-gray-400 uppercase font-bold">Stop</button>
-                        <button onclick="handleLogin()" class="just-btn px-6 py-2 text-xs font-bold rounded-xl uppercase italic">Go</button>
+                        <button onclick="handleLogin()" class="just-btn w-full py-3 text-sm font-bold rounded-xl uppercase italic">Go</button>
                     </div>
                 </div>
             </div>
@@ -76,22 +72,22 @@
                 <textarea id="postContent" placeholder="내용을 입력하세요." class="w-full h-32 resize-none outline-none text-sm mb-4 font-bold"></textarea>
                 
                 <div class="space-y-4 mb-6">
-                    <div class="flex items-center justify-between font-bold">
-                        <label class="text-xs text-gray-500 font-medium">📷 사진 업로드</label>
-                        <input type="file" id="postImage" accept="image/*" onchange="previewImage(this)" class="text-[10px] w-2/3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs text-gray-500 font-bold">📷 사진 업로드</label>
+                        <input type="file" id="postImage" accept="image/*" onchange="previewImage(this)" class="text-[10px] w-2/3 font-bold">
                     </div>
                     <div id="imagePreviewContainer" class="hidden rounded-xl overflow-hidden border border-gray-100 relative">
                         <img id="imgPreview" src="#" class="w-full h-auto">
                         <button onclick="removeImgPreview()" class="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 text-xs font-bold">X</button>
                     </div>
                     <label class="flex items-center gap-2 text-xs text-gray-500 cursor-pointer font-bold">
-                        <input type="checkbox" id="postPinned" class="rounded border-gray-300 text-blue-200"> 📌 상단 고정
+                        <input type="checkbox" id="postPinned" class="rounded border-gray-300"> 📌 상단 고정
                     </label>
                 </div>
 
                 <div class="flex justify-end gap-2 border-t pt-4">
-                    <button onclick="closeWriteModal()" class="px-4 py-2 text-xs font-bold text-gray-400 uppercase">Cancel</button>
-                    <button id="postSubmitBtn" onclick="savePost()" class="just-btn px-6 py-2 rounded-xl text-xs font-bold uppercase italic font-bold">Post</button>
+                    <button onclick="closeWriteModal()" class="px-4 py-2 text-xs font-bold text-gray-400">CANCEL</button>
+                    <button id="postSubmitBtn" onclick="savePost()" class="just-btn px-8 py-2 rounded-xl text-xs font-bold uppercase italic">Post</button>
                 </div>
             </div>
         </div>
@@ -101,13 +97,13 @@
                 <button onclick="closeModal('detailModal')" class="absolute top-6 right-6 text-gray-400 font-bold">X</button>
                 <div id="postDetailContent"></div>
                 <div id="adminActions" class="hidden flex gap-4 mt-6 pt-4 border-t border-gray-100 font-bold">
-                    <button onclick="editPost()" class="text-xs font-bold text-blue-400 italic uppercase">Edit</button>
-                    <button onclick="deletePost()" class="text-xs font-bold text-red-400 italic uppercase">Delete</button>
+                    <button onclick="editPost()" class="text-xs font-bold text-blue-400 uppercase italic">Edit</button>
+                    <button onclick="deletePost()" class="text-xs font-bold text-red-400 uppercase italic">Delete</button>
                 </div>
-                <div class="mt-8 pt-6 border-t border-gray-100 font-bold">
-                    <h3 class="text-sm font-bold mb-4 italic font-bold">Comments</h3>
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <h3 class="text-sm font-bold mb-4 italic">Comments</h3>
                     <div id="commentList" class="space-y-4 mb-6"></div>
-                    <div class="flex gap-2 sticky bottom-0 bg-white pt-2 font-bold">
+                    <div class="flex gap-2 sticky bottom-0 bg-white pt-2">
                         <input id="commentInput" type="text" placeholder="댓글을 입력하세요" class="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-xs outline-none">
                         <button onclick="addComment()" class="bg-white border border-gray-100 px-4 py-2 rounded-xl text-xs font-bold italic">등록</button>
                     </div>
@@ -119,12 +115,11 @@
     <script>
         let isLoggedIn = false;
         let currentUser = ""; 
-        let posts = JSON.parse(localStorage.getItem('mood_posts')) || []; // 로컬 스토리지에서 불러오기
+        let posts = JSON.parse(localStorage.getItem('mood_posts')) || [];
         let currentPostId = null;
         let tempImgData = null;
         let isEditingMode = false;
 
-        // 페이지 로드 시 피드 그리기
         window.onload = () => { renderFeed(); };
 
         function toggleLogin() {
@@ -135,9 +130,7 @@
                     document.getElementById('addBtn').classList.add('hidden');
                     document.getElementById('mainLoginBtn').innerText = "Just";
                 }
-            } else {
-                openLogin();
-            }
+            } else { openLogin(); }
         }
 
         function openLogin() { document.getElementById('loginModal').classList.remove('hidden'); }
@@ -166,15 +159,13 @@
         }
 
         function previewImage(input) {
-            const container = document.getElementById('imagePreviewContainer');
-            const preview = document.getElementById('imgPreview');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    preview.src = e.target.result;
                     tempImgData = e.target.result;
-                    container.classList.remove('hidden');
-                }
+                    document.getElementById('imgPreview').src = tempImgData;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }
@@ -186,59 +177,79 @@
         }
 
         function handleLogin() {
-            const idInput = document.getElementById('userId').value;
-            currentUser = idInput || "Anonymous";
+            currentUser = document.getElementById('userId').value || "Anonymous";
             isLoggedIn = true;
             document.getElementById('addBtn').classList.remove('hidden');
             document.getElementById('mainLoginBtn').innerText = "Logout";
             closeModal('loginModal');
         }
 
+        // CRITICAL: 게시글 저장 함수 수정
         function savePost() {
-            const title = document.getElementById('postTitle').value;
-            const content = document.getElementById('postContent').value;
-            const pinned = document.getElementById('postPinned').checked;
-            if(!title || !content) return;
+            const titleInput = document.getElementById('postTitle').value.trim();
+            const contentInput = document.getElementById('postContent').value.trim();
+            const isPinned = document.getElementById('postPinned').checked;
+
+            if(!titleInput || !contentInput) {
+                alert("제목과 내용을 입력해주세요.");
+                return;
+            }
 
             if (isEditingMode) {
-                const index = posts.findIndex(p => p.id === currentPostId);
-                if (index !== -1) {
-                    posts[index] = { ...posts[index], title, content, pinned, image: tempImgData };
+                const idx = posts.findIndex(p => p.id === currentPostId);
+                if (idx !== -1) {
+                    posts[idx].title = titleInput;
+                    posts[idx].content = contentInput;
+                    posts[idx].pinned = isPinned;
+                    posts[idx].image = tempImgData;
                 }
             } else {
-                const post = { 
-                    id: Date.now(), author: currentUser, title, content, pinned, image: tempImgData,
-                    date: new Date().toLocaleString(), comments: [] 
+                const newPost = {
+                    id: Date.now(),
+                    author: currentUser,
+                    title: titleInput,
+                    content: contentInput,
+                    pinned: isPinned,
+                    image: tempImgData,
+                    date: new Date().toLocaleString(),
+                    comments: []
                 };
-                posts.push(post);
+                posts.push(newPost);
             }
-            
-            updateStorage();
+
+            // 정렬 및 저장
+            posts.sort((a, b) => b.pinned - a.pinned || b.id - a.id);
+            try {
+                localStorage.setItem('mood_posts', JSON.stringify(posts));
+            } catch (e) {
+                alert("이미지 용량이 너무 커서 저장에 실패했습니다. 다른 사진을 써보세요!");
+                return;
+            }
+
             renderFeed();
             closeWriteModal();
             closeModal('detailModal');
         }
 
-        function updateStorage() {
-            posts.sort((a, b) => b.pinned - a.pinned || b.id - a.id);
-            localStorage.setItem('mood_posts', JSON.stringify(posts));
-        }
-
         function renderFeed() {
             const feed = document.getElementById('feed');
             const empty = document.getElementById('emptyMsg');
-            if(posts.length > 0) empty.classList.add('hidden');
-            else empty.classList.remove('hidden');
-
-            feed.innerHTML = posts.map(post => `
-                <div onclick="openDetail(${post.id})" class="py-6 cursor-pointer hover:bg-gray-50 transition flex justify-between items-center px-2">
-                    <div class="flex items-center gap-2">
-                        ${post.pinned ? '<span class="text-orange-400 text-xs">📌</span>' : ''}
-                        <h3 class="font-bold text-gray-800 text-sm">${post.title}</h3>
+            
+            if(posts.length === 0) {
+                empty.classList.remove('hidden');
+                feed.innerHTML = "";
+            } else {
+                empty.classList.add('hidden');
+                feed.innerHTML = posts.map(post => `
+                    <div onclick="openDetail(${post.id})" class="py-6 cursor-pointer hover:bg-gray-50 transition flex justify-between items-center px-2">
+                        <div class="flex items-center gap-2">
+                            ${post.pinned ? '<span class="text-orange-400 text-xs">📌</span>' : ''}
+                            <h3 class="font-bold text-gray-800 text-sm">${post.title}</h3>
+                        </div>
+                        <span class="text-[10px] text-gray-300 font-bold">MOOD ✔</span>
                     </div>
-                    <span class="text-[10px] text-gray-300">MOOD ✔</span>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
 
         function openDetail(id) {
@@ -247,16 +258,15 @@
             if (!post) return;
 
             document.getElementById('postDetailContent').innerHTML = `
-                ${post.pinned ? '<p class="text-[10px] text-orange-400 font-bold mb-1 font-bold">📌 PINNED POST</p>' : ''}
-                <h2 class="text-xl font-bold mb-2 font-bold font-bold">${post.title}</h2>
-                <p class="text-[10px] text-gray-400 mb-4 font-bold font-bold font-bold">${post.author} · ${post.date}</p>
-                ${post.image ? `<img src="${post.image}" class="w-full rounded-2xl mb-4 font-bold font-bold">` : ''}
+                ${post.pinned ? '<p class="text-[10px] text-orange-400 font-bold mb-1">📌 PINNED POST</p>' : ''}
+                <h2 class="text-xl font-bold mb-2 font-bold">${post.title}</h2>
+                <p class="text-[10px] text-gray-400 mb-4 font-bold">${post.author} · ${post.date}</p>
+                ${post.image ? `<img src="${post.image}" class="w-full rounded-2xl mb-4">` : ''}
                 <p class="text-sm leading-relaxed text-gray-600 whitespace-pre-wrap font-bold font-normal">${post.content}</p>
             `;
             
             const adminActions = document.getElementById('adminActions');
-            if (isLoggedIn) adminActions.classList.remove('hidden');
-            else adminActions.classList.add('hidden');
+            isLoggedIn ? adminActions.classList.remove('hidden') : adminActions.classList.add('hidden');
 
             renderComments();
             document.getElementById('detailModal').classList.remove('hidden');
@@ -275,7 +285,7 @@
             
             if (post.image) {
                 tempImgData = post.image;
-                document.getElementById('imgPreview').src = post.image;
+                document.getElementById('imgPreview').src = tempImgData;
                 document.getElementById('imagePreviewContainer').classList.remove('hidden');
             } else {
                 removeImgPreview();
@@ -286,7 +296,7 @@
         function deletePost() {
             if (confirm("정말 이 게시물을 삭제하시겠습니까?")) {
                 posts = posts.filter(p => p.id !== currentPostId);
-                updateStorage();
+                localStorage.setItem('mood_posts', JSON.stringify(posts));
                 renderFeed();
                 closeModal('detailModal');
             }
@@ -296,22 +306,14 @@
             const post = posts.find(p => p.id === currentPostId);
             const list = document.getElementById('commentList');
             if (!post) return;
-
             list.innerHTML = post.comments.map(c => `
                 <div class="border-b border-gray-50 pb-3 font-bold">
-                    <div class="flex justify-between items-start mb-1 font-bold">
+                    <div class="flex justify-between items-start mb-1">
                         <span class="text-[11px] font-bold">Mooder</span>
                         <span class="text-[9px] text-gray-300">2026.04.22</span>
                     </div>
                     <p class="text-xs text-gray-600 mb-2 font-normal font-bold">${c.text}</p>
-                    <div class="flex gap-2 items-center font-bold">
-                        <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="text-[9px] text-gray-400 font-bold">답글</button>
-                        <div class="hidden flex-1 flex gap-2 mt-2 font-bold">
-                            <input type="text" placeholder="답글 내용" class="flex-1 text-[10px] border-b outline-none font-normal font-bold">
-                            <button onclick="addReply(${c.id}, this.previousElementSibling)" class="text-[9px] font-bold italic font-bold">전송</button>
-                        </div>
-                    </div>
-                    ${c.replies ? c.replies.map(r => `<p class="ml-4 mt-2 text-[10px] text-gray-400 font-normal italic font-bold">↳ ${r}</p>`).join('') : ''}
+                    ${c.replies ? c.replies.map(r => `<p class="ml-4 mt-2 text-[10px] text-gray-400 font-normal italic">↳ ${r}</p>`).join('') : ''}
                 </div>
             `).join('');
         }
@@ -322,17 +324,7 @@
             const post = posts.find(p => p.id === currentPostId);
             post.comments.push({ id: Date.now(), text: input.value, replies: [] });
             input.value = '';
-            updateStorage();
-            renderComments();
-        }
-
-        function addReply(commentId, input) {
-            if(!input.value) return;
-            const post = posts.find(p => p.id === currentPostId);
-            const comment = post.comments.find(c => c.id === commentId);
-            comment.replies.push(input.value);
-            input.value = '';
-            updateStorage();
+            localStorage.setItem('mood_posts', JSON.stringify(posts));
             renderComments();
         }
     </script>
